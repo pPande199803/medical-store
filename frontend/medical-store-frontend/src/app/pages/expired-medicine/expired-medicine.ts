@@ -5,9 +5,14 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { environment } from '../../../environments/environment';
 import { MedicineService } from '../../services/medicine.service';
+import { OrderService } from '../../services/order.service';
 import { Medicine } from '../../models';
 
 type TabType = 'expired' | 'outOfStock';
+
+/* Default quantity used by the "Add to Order" action on this screen
+   (one strip). It can be adjusted later from the Order Medicines page. */
+const DEFAULT_ORDER_QUANTITY = 10;
 
 @Component({
   selector: 'app-expired-medicine',
@@ -17,6 +22,7 @@ type TabType = 'expired' | 'outOfStock';
 })
 export class ExpiredMedicine implements OnInit {
   private medicineService = inject(MedicineService);
+  private orderService = inject(OrderService);
 
   // --------------------------------------------------
   // SAMPLE MEDICINE DATA
@@ -25,6 +31,10 @@ export class ExpiredMedicine implements OnInit {
 
   medicines = signal<Medicine[]>([]);
   loading = signal(false);
+
+  /* Medicine currently being moved to the Order Medicines list —
+     disables every "Add to Order" button while the request runs. */
+  orderingId = signal<string | null>(null);
 
   ngOnInit(): void {
     this.loadMedicines();
@@ -335,6 +345,85 @@ export class ExpiredMedicine implements OnInit {
     window.open(whatsappUrl, '_blank');
 
     this.showExportMenu.set(false);
+  }
+
+  // --------------------------------------------------
+  // ADD TO ORDER
+  // --------------------------------------------------
+  /*
+    Moves a medicine from this screen to the Order Medicines list:
+    the order is created FIRST, then the medicine is deleted — so a
+    failed order call never loses the medicine.
+  */
+  addToOrder(medicine: Medicine) {
+
+    if (!medicine._id || this.orderingId()) {
+      return;
+    }
+
+    this.orderingId.set(medicine._id);
+
+    this.orderService
+      .create({
+        medicineName: medicine.name,
+        quantity: DEFAULT_ORDER_QUANTITY,
+      })
+      .subscribe({
+        next: () => {
+
+          this.medicineService.remove(medicine._id!).subscribe({
+            next: () => {
+
+              /* Drop the medicine from the table. */
+              this.medicines.update(list =>
+                list.filter(item => item._id !== medicine._id)
+              );
+
+              /* Stay on a valid page after the row disappeared. */
+              if (this.currentPage() > this.totalPages()) {
+                this.currentPage.set(
+                  Math.max(this.totalPages(), 1)
+                );
+              }
+
+              this.orderingId.set(null);
+
+              alert(
+                `${medicine.name} added to Order Medicines (Qty: ${DEFAULT_ORDER_QUANTITY}).`
+              );
+            },
+            error: (err) => {
+              this.orderingId.set(null);
+              alert(
+                err?.error?.message ||
+                'Failed to delete medicine.'
+              );
+            },
+          });
+
+        },
+        error: (err) => {
+          this.orderingId.set(null);
+          alert(err?.error?.message || 'Failed to add order.');
+        },
+      });
+  }
+
+  // --------------------------------------------------
+  // DATE FORMAT (YYYY/MM/DD)
+  // --------------------------------------------------
+  /* Treats the stored value as a calendar date and avoids any
+     timezone shifting that the Date pipe could introduce. */
+  formatDate(value: string | Date | undefined | null): string {
+
+    if (!value) {
+      return '';
+    }
+
+    const str =
+      typeof value === 'string' ? value : value.toISOString();
+
+    return str.split('T')[0].replace(/-/g, '/');
   }
 
   getEndIndex(): number {

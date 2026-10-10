@@ -302,7 +302,7 @@
           <table
             class="
               w-full
-              min-w-[950px]
+              min-w-[1100px]
               text-sm
             "
           >
@@ -347,6 +347,10 @@
 
                 <th class="px-4 py-3 text-left">
                   Expired Date
+                </th>
+
+                <th class="px-4 py-3 text-left">
+                  Action
                 </th>
 
               </tr>
@@ -457,16 +461,53 @@
                           font-medium
                         "
                       >
-                        {{ medicine.expiredDate }}
+                        {{ formatDate(medicine.expiredDate) }}
                       </span>
 
                     } @else {
 
                       <span class="text-gray-600">
-                        {{ medicine.expiredDate }}
+                        {{ formatDate(medicine.expiredDate) }}
                       </span>
 
                     }
+
+                  </td>
+
+                  <!-- ACTION -->
+                  <td class="px-4 py-3">
+
+                    <button
+                      type="button"
+                      (click)="addToOrder(medicine)"
+                      [disabled]="orderingId() !== null"
+                      title="Add this medicine to the Order Medicine list"
+                      class="
+                        inline-flex
+                        items-center
+                        gap-1.5
+                        px-3 py-1.5
+                        rounded-lg
+                        bg-[#065F46]
+                        text-white
+                        text-xs
+                        font-medium
+                        hover:bg-[#047857]
+                        transition
+                        disabled:opacity-50
+                        disabled:cursor-not-allowed
+                      "
+                    >
+
+                      <span>🛒</span>
+
+                      {{
+                        orderingId() === medicine._id
+                          ? 'Adding…'
+                          : 'Add to Order'
+                      }}
+
+                    </button>
 
                   </td>
 
