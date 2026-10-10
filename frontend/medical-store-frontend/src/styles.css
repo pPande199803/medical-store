@@ -1,3 +1,77 @@
 /* You can add global styles to this file, and also import other style files */
 
 @import 'tailwindcss';
+
+/* ============================================================
+   PRINT — "Print & Save" bill (New Bill page)
+   ------------------------------------------------------------
+   While the `printing-bill` class is on <body> (it is added by
+   NewBill.printAndSave() around window.print()), everything of
+   the app UI is hidden and only the dedicated .bill-print-sheet
+   — store header (logo / name / contact / address), medicine
+   table and totals with discount — is sent to the printer.
+   ============================================================ */
+
+/* The printable sheet is never visible on screen. */
+.bill-print-sheet {
+  display: none;
+}
+
+@media print {
+  @page {
+    margin: 12mm;
+  }
+
+  /* App chrome that does NOT contain the print sheet. */
+  body.printing-bill .app-header-bar,
+  body.printing-bill .app-sidebar,
+  body.printing-bill .app-sidebar-overlay,
+  body.printing-bill app-footer {
+    display: none !important;
+  }
+
+  /* Shell must not force extra (blank) pages while printing. */
+  body.printing-bill .app-shell {
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    background: #fff !important;
+  }
+
+  body.printing-bill .app-body {
+    display: block !important;
+    padding-top: 0 !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+  }
+
+  /* Keep the wrapper (it holds the sheet) but remove its scroll/padding. */
+  body.printing-bill .app-main-content {
+    height: auto !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+
+  /* The whole on-screen New Bill page (search, buttons, etc.). */
+  body.printing-bill .new-bill-screen {
+    display: none !important;
+  }
+
+  /* Only the printable bill is shown. */
+  body.printing-bill .bill-print-sheet {
+    display: block !important;
+    width: 100%;
+    color: #111827;
+    background: #fff;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  /* Keep the logo and brand colours on paper. */
+  body.printing-bill .bill-print-sheet *,
+  body.printing-bill .bill-print-sheet {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

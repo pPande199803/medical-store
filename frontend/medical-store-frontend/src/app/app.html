@@ -7,22 +7,22 @@
 
 } @else {
 
-  <div class="h-screen flex flex-col bg-gray-50 overflow-hidden">
+  <div class="app-shell h-screen flex flex-col bg-gray-50 overflow-hidden">
 
     <!-- Fixed Header -->
-    <div class="fixed top-0 left-0 right-0 z-[100] h-16">
+    <div class="app-header-bar fixed top-0 left-0 right-0 z-[100] h-16">
       <app-header
         (menuClick)="toggleSidebar()"
       />
     </div>
 
     <!-- Main Layout -->
-    <div class="flex flex-1 pt-16 min-h-0">
+    <div class="app-body flex flex-1 pt-16 min-h-0">
 
       <!-- Mobile Overlay -->
       @if (isSidebarOpen()) {
         <div
-          class="fixed inset-0 bg-black/40 z-40 md:hidden"
+          class="app-sidebar-overlay fixed inset-0 bg-black/40 z-40 md:hidden"
           (click)="closeSidebar()"
         ></div>
       }
@@ -30,6 +30,7 @@
       <!-- Fixed Sidebar -->
       <aside
         class="
+          app-sidebar
           bg-[#F5F5F5]
           fixed md:relative
           top-16 md:top-0
@@ -50,6 +51,7 @@
       <!-- Only Main Content Scrolls -->
       <main
         class="
+          app-main-content
           flex-1
           min-w-0
           min-h-0

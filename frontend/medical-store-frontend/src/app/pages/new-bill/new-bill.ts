@@ -3,10 +3,25 @@ import { Component, computed, effect, inject, signal, viewChild } from '@angular
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MedicineService } from '../../services/medicine.service';
 import { BillService } from '../../services/bill.service';
+import { AuthService } from '../../services/auth.service';
 import { Medicine, BillItem } from '../../models';
 
 /* How many single medicines make up one strip. */
 const MEDICINES_PER_STRIP = 10;
+
+/* Snapshot of the bill that is rendered on the printable sheet.
+   It is captured BEFORE the screen is reset, because the print
+   dialog opens after the bill has already been saved & cleared. */
+interface PrintableBill {
+  customerName: string;
+  mobileNumber: string;
+  items: BillItem[];
+  totalAmount: number;
+  discount: number;
+  discountAmount: number;
+  finalAmount: number;
+  printedAt: string;
+}
 
 /* 10 digits when a number is given — but empty is allowed, because
    walk-in customers don't have to share their mobile number. */
@@ -30,6 +45,11 @@ export class NewBill {
   private medicineService = inject(MedicineService);
   private billService = inject(BillService);
   private fb = inject(FormBuilder);
+
+  /* Store details (medical name, logo, contact, address) used on the
+     printable bill header. */
+  auth = inject(AuthService);
+  user = this.auth.currentUser;
 
   /* Refs so we can move focus with the keyboard only. */
   searchInput = viewChild<HTMLInputElement>('searchInput');
@@ -76,6 +96,10 @@ export class NewBill {
 
   /* ---------------- DISCOUNT ---------------- */
   discount = signal(0);
+
+  /* ---------------- PRINT ---------------- */
+  /* Snapshot of the bill shown on the printable sheet. */
+  printData = signal<PrintableBill | null>(null);
 
   /* ---------------- STATE ---------------- */
   adding = signal(false);
@@ -370,19 +394,38 @@ export class NewBill {
       return;
     }
 
+    /* Snapshot the bill BEFORE it is saved & reset, otherwise the
+       printable sheet would be empty when the dialog opens. */
+    this.printData.set({
+      ...this.buildBillPayload(),
+      printedAt: new Date().toISOString(),
+    });
+
     this.saving.set(true);
 
     this.billService.create(this.buildBillPayload()).subscribe({
       next: () => {
         this.saving.set(false);
         this.resetBill();
-        window.print();
+        this.openPrintSheet();
       },
       error: (err) => {
         this.saving.set(false);
         alert(err?.error?.message || 'Failed to save bill. Please try again.');
       },
     });
+  }
+
+  /* Puts <body> into the "printing-bill" state (global print CSS then
+     shows only the .bill-print-sheet) and opens the print dialog. */
+  private openPrintSheet(): void {
+    document.body.classList.add('printing-bill');
+
+    /* One tick so Angular can render the sheet before printing. */
+    setTimeout(() => {
+      window.print();
+      document.body.classList.remove('printing-bill');
+    }, 200);
   }
 
   /* ---------------- CLEAR / CANCEL BILL (restores reserved stock) ---------------- */
@@ -467,6 +510,20 @@ export class NewBill {
     const day = str.split('T')[0]; // "YYYY-MM-DD"
 
     return day.replace(/-/g, '/'); // "YYYY/MM/DD"
+  }
+
+  /* Date + time used on the printable bill. */
+  formatDateTime(value: string | Date | undefined | null): string {
+    if (!value) {
+      return '';
+    }
+
+    const time = new Date(value).toLocaleTimeString([], {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+
+    return `${this.formatDate(value)} ${time}`;
   }
 
   /* ---------------- KEYBOARD NAVIGATION ---------------- */

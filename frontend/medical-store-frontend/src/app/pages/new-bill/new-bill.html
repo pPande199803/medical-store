@@ -1,4 +1,4 @@
-<div class="min-h-full bg-[#F5F5F5] p-4 md:p-6">
+<div class="new-bill-screen min-h-full bg-[#F5F5F5] p-4 md:p-6">
 
     <div class="max-w-7xl mx-auto">
 
@@ -715,3 +715,164 @@
     </div>
 
 </div>
+
+
+<!-- ============================================================
+     PRINTABLE BILL
+     Hidden on screen — only rendered while the "printing-bill"
+     class is on <body> (see the print rules in src/styles.css).
+     Contains: store header (logo, medical name, contact, address),
+     medicine table, then total with discount.
+     ============================================================ -->
+<div class="bill-print-sheet">
+
+    @if (printData(); as bill) {
+
+        <!-- STORE HEADER -->
+        <div class="text-center pb-3 mb-4 border-b-2 border-[#065F46]">
+
+            @if (user()?.logo) {
+            <img [src]="user()?.logo" [alt]="user()?.medicalName"
+                class="block w-16 h-16 mx-auto object-contain mb-2" />
+            }
+
+            <h1 class="text-2xl font-bold uppercase text-[#065F46]">
+                {{ user()?.medicalName || 'Medical Store' }}
+            </h1>
+
+            @if (user()?.phone) {
+            <p class="text-sm text-gray-700 mt-1">
+                Contact: {{ user()?.phone }}
+            </p>
+            }
+
+            @if (user()?.address) {
+            <p class="text-sm text-gray-700">
+                {{ user()?.address }}
+            </p>
+            }
+
+        </div>
+
+
+        <!-- BILL META -->
+        <div class="flex flex-wrap justify-between gap-x-6 gap-y-1 text-sm mb-3">
+
+            <span>
+                <strong>Customer:</strong>
+                {{ bill.customerName || 'Walk-in Customer' }}
+            </span>
+
+            <span>
+                <strong>Mobile:</strong>
+                {{ bill.mobileNumber || '—' }}
+            </span>
+
+            <span>
+                <strong>Date:</strong>
+                {{ formatDateTime(bill.printedAt) }}
+            </span>
+
+        </div>
+
+
+        <!-- MEDICINES TABLE -->
+        <table class="w-full border-collapse">
+
+            <thead>
+
+                <tr class="bg-[#065F46] text-white">
+
+                    <th class="border border-[#065F46] px-2 py-2 text-left text-sm font-medium">
+                        Sr.No
+                    </th>
+
+                    <th class="border border-[#065F46] px-2 py-2 text-left text-sm font-medium">
+                        Medicine Name
+                    </th>
+
+                    <th class="border border-[#065F46] px-2 py-2 text-center text-sm font-medium">
+                        Quantity
+                    </th>
+
+                    <th class="border border-[#065F46] px-2 py-2 text-right text-sm font-medium">
+                        Per Medicine Price
+                    </th>
+
+                    <th class="border border-[#065F46] px-2 py-2 text-right text-sm font-medium">
+                        Total Price
+                    </th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                @for (item of bill.items; track item.medicineId; let i = $index) {
+
+                    <tr>
+
+                        <td class="border border-gray-300 px-2 py-1.5 text-sm">
+                            {{ i + 1 }}
+                        </td>
+
+                        <td class="border border-gray-300 px-2 py-1.5 text-sm">
+                            {{ item.name }}
+                        </td>
+
+                        <td class="border border-gray-300 px-2 py-1.5 text-sm text-center">
+                            {{ item.quantity }}
+                        </td>
+
+                        <td class="border border-gray-300 px-2 py-1.5 text-sm text-right">
+                            ₹{{ item.perMedicinePrice | number:'1.2-2' }}
+                        </td>
+
+                        <td class="border border-gray-300 px-2 py-1.5 text-sm text-right">
+                            ₹{{ item.totalPrice | number:'1.2-2' }}
+                        </td>
+
+                    </tr>
+
+                }
+
+            </tbody>
+
+        </table>
+
+
+        <!-- TOTAL + DISCOUNT -->
+        <div class="mt-4 w-full sm:w-80 ml-auto text-sm">
+
+            <div class="flex justify-between py-1">
+                <span>Total Amount</span>
+                <span>₹{{ bill.totalAmount | number:'1.2-2' }}</span>
+            </div>
+
+            @if (bill.discount > 0) {
+
+                <div class="flex justify-between py-1 text-red-600">
+                    <span>Discount ({{ bill.discount }}%)</span>
+                    <span>- ₹{{ bill.discountAmount | number:'1.2-2' }}</span>
+                </div>
+
+            }
+
+            <div class="flex justify-between items-center pt-2 mt-1 border-t border-gray-400 font-bold text-base">
+                <span>Final Amount</span>
+                <span>₹{{ bill.finalAmount | number:'1.2-2' }}</span>
+            </div>
+
+        </div>
+
+
+        <!-- FOOTER NOTE -->
+        <p class="text-center text-xs text-gray-600 mt-6 pt-3 border-t border-gray-300">
+            Thank you for your purchase!
+        </p>
+
+    }
+
+</div>
+
