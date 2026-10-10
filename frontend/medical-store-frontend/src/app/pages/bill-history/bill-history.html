@@ -1,0 +1,314 @@
+<div class="min-h-full bg-[#F5F5F5] p-4 md:p-6">
+
+  <div class="max-w-7xl mx-auto">
+
+    <!-- Header -->
+    <div class="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+
+      <div>
+        <h1 class="text-2xl font-bold text-[#065F46]">Bill History</h1>
+        <p class="mt-1 text-sm text-gray-500">
+          All bills saved in your store
+        </p>
+      </div>
+
+      <!-- Export -->
+      <div class="flex items-center gap-3">
+        <button type="button" (click)="exportExcel()" class="
+            flex items-center gap-2
+            px-4 py-2.5 rounded-xl
+            border border-[#065F46] bg-white
+            text-[#065F46] text-sm font-semibold
+            transition hover:bg-[#DCFCE7]
+          ">
+          <span>📊</span> Excel
+        </button>
+
+        <button type="button" (click)="exportPdf()" class="
+            flex items-center gap-2
+            px-4 py-2.5 rounded-xl
+            bg-[#065F46] text-white text-sm font-semibold
+            transition hover:bg-[#047857]
+          ">
+          <span>📄</span> PDF
+        </button>
+      </div>
+
+    </div>
+
+
+    <!-- Stats -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+      <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 flex items-center gap-4">
+        <div class="w-12 h-12 rounded-xl bg-[#D1FAE5] flex items-center justify-center text-2xl">🧾</div>
+        <div>
+          <p class="text-sm text-gray-500">Total Bills</p>
+          <p class="text-2xl font-bold text-[#065F46]">{{ totalBills() }}</p>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 flex items-center gap-4">
+        <div class="w-12 h-12 rounded-xl bg-[#D1FAE5] flex items-center justify-center text-2xl">💰</div>
+        <div>
+          <p class="text-sm text-gray-500">Total Revenue</p>
+          <p class="text-2xl font-bold text-[#047857]">₹{{ totalRevenue() | number:'1.2-2' }}</p>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- Card -->
+    <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+
+      <!-- Search + Date filter -->
+      <div class="px-5 py-4 border-b border-gray-200 flex flex-col lg:flex-row lg:items-center gap-3">
+
+        <div class="relative w-full lg:w-96">
+          <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">🔍</span>
+          <input type="text" [value]="searchText()" (input)="onSearch($event)"
+            placeholder="Search by bill no, customer or mobile..." class="
+              w-full pl-11 pr-4 py-2.5
+              bg-gray-50 border border-gray-300 rounded-xl
+              text-sm outline-none
+              focus:border-[#059669] focus:ring-2 focus:ring-[#D1FAE5]
+            " />
+        </div>
+
+        <div class="flex flex-wrap items-center gap-3">
+
+          <!-- Date filter -->
+          <div class="
+              flex items-center gap-2
+              bg-gray-50 border border-gray-300 rounded-xl
+              px-3 py-2
+              focus-within:border-[#059669]
+              focus-within:ring-2
+              focus-within:ring-[#D1FAE5]
+            ">
+            <span class="text-gray-400">📅</span>
+            <input type="date" [ngModel]="filterDate()" (ngModelChange)="setFilterDate($event)"
+              class="bg-transparent text-sm outline-none text-gray-700" />
+          </div>
+
+          @if (filterDate()) {
+
+            <button type="button" (click)="clearFilterDate()"
+              class="px-3 py-2 rounded-xl border border-gray-300 text-sm text-gray-600 hover:bg-gray-50 transition">
+              ✕ Clear date
+            </button>
+
+            <!-- Two-step delete: 1st click arms, 2nd click deletes that day's bills -->
+            <button type="button" (click)="confirmDeleteDate()" [disabled]="deleteCount() === 0" class="
+                px-4 py-2 rounded-xl text-sm font-semibold transition
+                disabled:opacity-40 disabled:cursor-not-armed
+              "
+              [class.bg-red-50]="armedDelete()"
+              [class.border]="armedDelete()"
+              [class.border-red-500]="armedDelete()"
+              [class.text-red-600]="armedDelete()"
+              [class.bg-red-600]="!armedDelete()"
+              [class.text-white]="!armedDelete()">
+              {{ armedDelete() ? '⚠ Sure? Delete ' + deleteCount() + ' bills' : '🗑 Delete this day (' + deleteCount() + ')' }}
+            </button>
+
+          }
+
+        </div>
+
+      </div>
+
+
+      <!-- Notice -->
+      @if (notice(); as n) {
+        <div class="px-5 py-3 text-sm font-medium"
+          [class.bg-green-50]="n.type === 'success'"
+          [class.text-green-700]="n.type === 'success'"
+          [class.bg-red-50]="n.type === 'error'"
+          [class.text-red-600]="n.type === 'error'">
+          {{ n.text }}
+        </div>
+      }
+
+
+      @if (loading()) {
+        <div class="p-12 text-center text-gray-500">Loading bills…</div>
+      } @else {
+
+        <!-- TABLE -->
+        <div class="overflow-x-auto">
+          <table class="w-full min-w-[800px]">
+            <thead>
+              <tr class="bg-[#065F46] text-white">
+                <th class="px-4 py-3 text-left text-sm font-medium">Sr.No</th>
+                <th class="px-4 py-3 text-left text-sm font-medium">Bill No</th>
+                <th class="px-4 py-3 text-left text-sm font-medium">Customer</th>
+                <th class="px-4 py-3 text-left text-sm font-medium">Mobile</th>
+                <th class="px-4 py-3 text-center text-sm font-medium">Items</th>
+                <th class="px-4 py-3 text-right text-sm font-medium">Final Amount</th>
+                <th class="px-4 py-3 text-center text-sm font-medium">Date</th>
+                <th class="px-4 py-3 text-center text-sm font-medium">Action</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              @for (bill of filteredBills(); track bill._id; let i = $index) {
+                <tr class="border-b border-gray-100 hover:bg-[#F0FDF4] transition">
+
+                  <td class="px-4 py-3 text-gray-600">{{ i + 1 }}</td>
+
+                  <td class="px-4 py-3 font-medium text-gray-800">{{ bill.billNumber }}</td>
+
+                  <td class="px-4 py-3 text-gray-700">{{ bill.customerName }}</td>
+
+                  <td class="px-4 py-3 text-gray-700">{{ bill.mobileNumber }}</td>
+
+                  <td class="px-4 py-3 text-center text-gray-700">{{ itemCount(bill) }}</td>
+
+                  <td class="px-4 py-3 text-right font-semibold text-[#065F46]">
+                    ₹{{ bill.finalAmount | number:'1.2-2' }}
+                  </td>
+
+                  <td class="px-4 py-3 text-center text-gray-600">
+                    {{ formatDate(bill.createdAt) }}
+                  </td>
+
+                  <td class="px-4 py-3 text-center">
+                    <button type="button" (click)="openBill(bill)" class="
+                        px-3 py-1.5 rounded-lg text-xs font-medium
+                        bg-[#DCFCE7] text-[#047857]
+                        hover:bg-[#BBF7D0] transition
+                      ">
+                      View
+                    </button>
+                  </td>
+
+                </tr>
+              }
+
+              @if (filteredBills().length === 0) {
+                <tr>
+                  <td colspan="8" class="px-4 py-12 text-center">
+                    <div class="text-4xl mb-3">🧾</div>
+                    <p class="text-gray-500 font-medium">@if (filterDate()) {
+                    No bills on {{ formatDate(filterDate()) }}
+                  } @else {
+                    No bills found
+                  }</p>
+                    <p class="text-sm text-gray-400 mt-1">Saved bills will appear here.</p>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+      }
+
+    </div>
+
+  </div>
+
+</div>
+
+<!-- ================================= -->
+<!-- BILL DETAIL MODAL -->
+<!-- ================================= -->
+@if (selectedBill()) {
+
+<div class="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 p-4"
+  (click)="closeBill()">
+
+  <div class="w-full max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden" (click)="$event.stopPropagation()">
+
+    <!-- Modal Header -->
+    <div class="px-6 py-4 bg-gradient-to-r from-[#F0FDF4] to-white border-b border-gray-200 flex items-center justify-between">
+
+      <div>
+        <h2 class="text-lg font-semibold text-[#065F46]">
+          {{ selectedBill()?.billNumber }}
+        </h2>
+        <p class="text-xs text-gray-500 mt-0.5">
+          {{ formatDateTime(selectedBill()?.createdAt) }}
+        </p>
+      </div>
+
+      <button type="button" (click)="closeBill()"
+        class="text-gray-400 hover:text-gray-700 text-xl leading-none">
+        ✕
+      </button>
+
+    </div>
+
+    <!-- Customer -->
+    <div class="px-6 py-4 border-b border-gray-100 grid grid-cols-2 gap-4">
+      <div>
+        <p class="text-xs text-gray-400 uppercase">Customer</p>
+        <p class="text-gray-800 font-medium">{{ selectedBill()?.customerName }}</p>
+      </div>
+      <div>
+        <p class="text-xs text-gray-400 uppercase">Mobile</p>
+        <p class="text-gray-800 font-medium">{{ selectedBill()?.mobileNumber }}</p>
+      </div>
+    </div>
+
+    <!-- Items -->
+    <div class="px-6 py-4 max-h-72 overflow-y-auto">
+      <table class="w-full">
+        <thead>
+          <tr class="text-left text-xs text-gray-400 uppercase border-b border-gray-100">
+            <th class="pb-2">Medicine</th>
+            <th class="pb-2 text-center">Qty</th>
+            <th class="pb-2 text-right">Price</th>
+            <th class="pb-2 text-right">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of selectedBill()?.items; track item.name) {
+            <tr class="border-b border-gray-50">
+              <td class="py-2 text-sm text-gray-800">{{ item.name }}</td>
+              <td class="py-2 text-sm text-center text-gray-600">{{ item.quantity }}</td>
+              <td class="py-2 text-sm text-right text-gray-600">₹{{ item.perMedicinePrice }}</td>
+              <td class="py-2 text-sm text-right font-medium text-gray-800">₹{{ item.totalPrice | number:'1.2-2' }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Totals -->
+    <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 space-y-1.5 text-sm">
+      <div class="flex justify-between text-gray-600">
+        <span>Total</span>
+        <span>₹{{ selectedBill()?.totalAmount | number:'1.2-2' }}</span>
+      </div>
+      <div class="flex justify-between text-red-500">
+        <span>Discount ({{ selectedBill()?.discount }}%)</span>
+        <span>- ₹{{ selectedBill()?.discountAmount | number:'1.2-2' }}</span>
+      </div>
+      <div class="flex justify-between items-center pt-2 border-t border-gray-200">
+        <span class="font-semibold text-gray-800">Final Amount</span>
+        <span class="text-xl font-bold text-[#065F46]">₹{{ selectedBill()?.finalAmount | number:'1.2-2' }}</span>
+      </div>
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="px-6 py-4 flex justify-end gap-3 border-t border-gray-100">
+      <button type="button" (click)="closeBill()" class="
+          px-5 py-2.5 rounded-lg border border-gray-200
+          text-gray-600 font-medium hover:bg-gray-50 transition
+        ">
+        Close
+      </button>
+      <button type="button" (click)="printBill()" class="
+          px-6 py-2.5 rounded-lg bg-[#065F46] text-white
+          font-medium hover:bg-[#047857] transition
+        ">
+        Print
+      </button>
+    </div>
+
+  </div>
+
+</div>
+
+}

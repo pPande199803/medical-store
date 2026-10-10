@@ -1,0 +1,654 @@
+<div class="min-h-full bg-[#F5F5F5] p-4 md:p-6">
+
+  <div
+    class="
+      max-w-7xl
+      mx-auto
+      bg-white
+      rounded-2xl
+      shadow-sm
+      border border-gray-200
+      overflow-visible
+    "
+  >
+
+    <!-- HEADER -->
+    <div
+      class="
+        px-5 py-4
+        border-b border-gray-200
+        flex flex-col
+        md:flex-row
+        md:items-center
+        md:justify-between
+        gap-4
+      "
+    >
+
+      <div>
+        <h1
+          class="
+            text-xl
+            font-semibold
+            text-[#065F46]
+          "
+        >
+          Medicine Status
+        </h1>
+
+        <p class="text-sm text-gray-500 mt-1">
+          Manage expired and out of stock medicines
+        </p>
+      </div>
+
+      <!-- EXPORT -->
+      <div class="relative">
+
+        <button
+          type="button"
+          (click)="toggleExportMenu()"
+          class="
+            flex
+            items-center
+            gap-2
+            px-4 py-2.5
+            rounded-xl
+            bg-[#065F46]
+            text-white
+            text-sm
+            font-medium
+            hover:bg-[#047857]
+            transition
+          "
+        >
+          <span>Export</span>
+          <span class="text-xs">▼</span>
+        </button>
+
+        @if (showExportMenu()) {
+
+          <div
+            class="
+              absolute
+              right-0
+              top-full
+              mt-2
+              w-48
+              bg-white
+              border border-gray-200
+              rounded-xl
+              shadow-lg
+              z-50
+              overflow-hidden
+            "
+          >
+
+            <!-- EXCEL -->
+            <button
+              type="button"
+              (click)="exportExcel()"
+              class="
+                w-full
+                px-4 py-3
+                text-left
+                text-sm
+                text-gray-700
+                hover:bg-[#F0FDF4]
+                flex items-center
+                gap-3
+              "
+            >
+              <span>📊</span>
+              <span>Export Excel</span>
+            </button>
+
+            <!-- PDF -->
+            <button
+              type="button"
+              (click)="exportPdf()"
+              class="
+                w-full
+                px-4 py-3
+                text-left
+                text-sm
+                text-gray-700
+                hover:bg-[#F0FDF4]
+                flex items-center
+                gap-3
+              "
+            >
+              <span>📄</span>
+              <span>Export PDF</span>
+            </button>
+
+            <!-- WHATSAPP -->
+            <button
+              type="button"
+              (click)="sendToWhatsApp()"
+              class="
+                w-full
+                px-4 py-3
+                text-left
+                text-sm
+                text-gray-700
+                hover:bg-[#F0FDF4]
+                flex items-center
+                gap-3
+              "
+            >
+              <span>💬</span>
+              <span>Send on WhatsApp</span>
+            </button>
+
+          </div>
+
+        }
+
+      </div>
+
+    </div>
+
+
+    <!-- TABS -->
+    <div
+      class="
+        px-5 pt-5
+        flex
+        gap-2
+        border-b border-gray-200
+      "
+    >
+
+      <!-- EXPIRED -->
+      <button
+        type="button"
+        (click)="changeTab('expired')"
+        class="
+          px-5 py-3
+          text-sm
+          font-medium
+          border-b-2
+          transition
+        "
+        [class.text-[#065F46]]="
+          activeTab() === 'expired'
+        "
+        [class.border-[#059669]]="
+          activeTab() === 'expired'
+        "
+        [class.text-gray-500]="
+          activeTab() !== 'expired'
+        "
+        [class.border-transparent]="
+          activeTab() !== 'expired'
+        "
+      >
+        Expired Medicine
+
+        <span
+          class="
+            ml-2
+            px-2 py-0.5
+            rounded-full
+            text-xs
+            bg-red-100
+            text-red-600
+          "
+        >
+          {{ expiredMedicines().length }}
+        </span>
+
+      </button>
+
+
+      <!-- OUT OF STOCK -->
+      <button
+        type="button"
+        (click)="changeTab('outOfStock')"
+        class="
+          px-5 py-3
+          text-sm
+          font-medium
+          border-b-2
+          transition
+        "
+        [class.text-[#065F46]]="
+          activeTab() === 'outOfStock'
+        "
+        [class.border-[#059669]]="
+          activeTab() === 'outOfStock'
+        "
+        [class.text-gray-500]="
+          activeTab() !== 'outOfStock'
+        "
+        [class.border-transparent]="
+          activeTab() !== 'outOfStock'
+        "
+      >
+        Out of Stock
+
+        <span
+          class="
+            ml-2
+            px-2 py-0.5
+            rounded-full
+            text-xs
+            bg-orange-100
+            text-orange-600
+          "
+        >
+          {{ outOfStockMedicines().length }}
+        </span>
+
+      </button>
+
+    </div>
+
+
+    <!-- SEARCH -->
+    <div class="p-5">
+
+      <div class="relative">
+
+        <span
+          class="
+            absolute
+            left-4
+            top-1/2
+            -translate-y-1/2
+            text-gray-400
+          "
+        >
+          🔍
+        </span>
+
+        <input
+          type="text"
+          [value]="searchText()"
+          (input)="updateSearch($event)"
+          placeholder="Search medicine..."
+          class="
+            w-full
+            pl-11 pr-4
+            py-3
+            border border-gray-300
+            rounded-xl
+            outline-none
+            text-sm
+            focus:border-[#059669]
+            focus:ring-2
+            focus:ring-[#D1FAE5]
+          "
+        />
+
+      </div>
+
+    </div>
+
+
+    <!-- TABLE -->
+    <div class="px-5 pb-5">
+
+      @if (paginatedMedicines().length > 0) {
+
+        <div
+          class="
+            overflow-x-auto
+            rounded-xl
+            border border-gray-200
+          "
+        >
+
+          <table
+            class="
+              w-full
+              min-w-[950px]
+              text-sm
+            "
+          >
+
+            <!-- TABLE HEADER -->
+            <thead>
+
+              <tr
+                class="
+                  bg-[#065F46]
+                  text-white
+                "
+              >
+
+                <th class="px-4 py-3 text-left">
+                  Sr.No
+                </th>
+
+                <th class="px-4 py-3 text-left">
+                  Medicine Name
+                </th>
+
+                <th class="px-4 py-3 text-left">
+                  Per Medicine Price
+                </th>
+
+                <th class="px-4 py-3 text-left">
+                  1 Strip Price
+                </th>
+
+                <th class="px-4 py-3 text-left">
+                  Box Number
+                </th>
+
+                <th class="px-4 py-3 text-left">
+                  Stock Available
+                </th>
+
+                <th class="px-4 py-3 text-left">
+                  In-Stock
+                </th>
+
+                <th class="px-4 py-3 text-left">
+                  Expired Date
+                </th>
+
+              </tr>
+
+            </thead>
+
+
+            <!-- TABLE BODY -->
+            <tbody>
+
+              @for (
+                medicine of paginatedMedicines();
+                track medicine._id;
+                let i = $index
+              ) {
+
+                <tr
+                  class="
+                    border-b
+                    border-gray-100
+                    hover:bg-[#F0FDF4]
+                    transition
+                  "
+                >
+
+                  <td class="px-4 py-3 text-gray-600">
+                    {{
+                      (currentPage() - 1)
+                      * recordsPerPage
+                      + i
+                      + 1
+                    }}
+                  </td>
+
+                  <td
+                    class="
+                      px-4 py-3
+                      font-medium
+                      text-gray-800
+                    "
+                  >
+                    {{ medicine.name }}
+                  </td>
+
+                  <td class="px-4 py-3 text-gray-700">
+                    ₹{{ medicine.perMedicinePrice }}
+                  </td>
+
+                  <td class="px-4 py-3 text-gray-700">
+                    ₹{{ medicine.stripPrice }}
+                  </td>
+
+                  <td class="px-4 py-3 text-gray-700">
+                    {{ medicine.boxNumber }}
+                  </td>
+
+                  <td class="px-4 py-3 text-gray-700">
+                    {{ medicine.stockAvailable }}
+                  </td>
+
+                  <td class="px-4 py-3">
+
+                    @if (medicine.inStock) {
+
+                      <span
+                        class="
+                          inline-flex
+                          px-2.5 py-1
+                          rounded-full
+                          text-xs
+                          font-medium
+                          bg-[#DCFCE7]
+                          text-[#047857]
+                        "
+                      >
+                        In Stock
+                      </span>
+
+                    } @else {
+
+                      <span
+                        class="
+                          inline-flex
+                          px-2.5 py-1
+                          rounded-full
+                          text-xs
+                          font-medium
+                          bg-red-100
+                          text-red-600
+                        "
+                      >
+                        Out of Stock
+                      </span>
+
+                    }
+
+                  </td>
+
+                  <td class="px-4 py-3">
+
+                    @if (
+                      activeTab() === 'expired'
+                    ) {
+
+                      <span
+                        class="
+                          text-red-600
+                          font-medium
+                        "
+                      >
+                        {{ medicine.expiredDate }}
+                      </span>
+
+                    } @else {
+
+                      <span class="text-gray-600">
+                        {{ medicine.expiredDate }}
+                      </span>
+
+                    }
+
+                  </td>
+
+                </tr>
+
+              }
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+
+        <!-- PAGINATION -->
+        <div
+          class="
+            flex
+            flex-col
+            sm:flex-row
+            items-center
+            justify-between
+            gap-4
+            mt-5
+          "
+        >
+
+          <p class="text-sm text-gray-500">
+            Showing
+
+            {{
+              (currentPage() - 1)
+              * recordsPerPage + 1
+            }}
+
+            -
+
+            {{
+              getEndIndex()
+            }}
+
+            of
+            {{ filteredMedicines().length }}
+          </p>
+
+
+          <div
+            class="
+              flex
+              items-center
+              gap-1
+            "
+          >
+
+            <!-- PREVIOUS -->
+            <button
+              type="button"
+              (click)="previousPage()"
+              [disabled]="currentPage() === 1"
+              class="
+                px-3 py-2
+                rounded-lg
+                border border-gray-200
+                text-sm
+                text-gray-600
+                disabled:opacity-40
+                disabled:cursor-not-allowed
+                hover:bg-[#F0FDF4]
+              "
+            >
+              Previous
+            </button>
+
+
+            <!-- PAGE NUMBERS -->
+            @for (
+              page of [].constructor(totalPages());
+              track $index
+            ) {
+
+              <button
+                type="button"
+                (click)="goToPage($index + 1)"
+                class="
+                  w-9 h-9
+                  rounded-lg
+                  text-sm
+                  transition
+                "
+                [class.bg-[#065F46]]="
+                  currentPage() === $index + 1
+                "
+                [class.text-white]="
+                  currentPage() === $index + 1
+                "
+                [class.text-gray-600]="
+                  currentPage() !== $index + 1
+                "
+                [class.hover:bg-[#DCFCE7]]="
+                  currentPage() !== $index + 1
+                "
+              >
+                {{ $index + 1 }}
+              </button>
+
+            }
+
+
+            <!-- NEXT -->
+            <button
+              type="button"
+              (click)="nextPage()"
+              [disabled]="
+                currentPage() === totalPages()
+              "
+              class="
+                px-3 py-2
+                rounded-lg
+                border border-gray-200
+                text-sm
+                text-gray-600
+                disabled:opacity-40
+                disabled:cursor-not-allowed
+                hover:bg-[#F0FDF4]
+              "
+            >
+              Next
+            </button>
+
+          </div>
+
+        </div>
+
+      } @else {
+
+        <!-- EMPTY STATE -->
+        <div
+          class="
+            py-16
+            text-center
+            border
+            border-gray-200
+            rounded-xl
+          "
+        >
+
+          <div class="text-4xl mb-3">
+            💊
+          </div>
+
+          <h3
+            class="
+              text-base
+              font-semibold
+              text-gray-700
+            "
+          >
+            No medicines found
+          </h3>
+
+          <p
+            class="
+              text-sm
+              text-gray-500
+              mt-1
+            "
+          >
+            There are no
+            {{
+              activeTab() === 'expired'
+                ? 'expired'
+                : 'out of stock'
+            }}
+            medicines.
+          </p>
+
+        </div>
+
+      }
+
+    </div>
+
+  </div>
+
+</div>

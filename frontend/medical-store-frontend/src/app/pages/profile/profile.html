@@ -1,0 +1,182 @@
+<div class="min-h-full bg-[#F5F5F5] p-4 md:p-6">
+
+  <div class="max-w-4xl mx-auto">
+
+    <!-- Header -->
+    <div class="mb-6">
+      <h1 class="text-2xl font-bold text-[#065F46]">Profile</h1>
+      <p class="mt-1 text-sm text-gray-500">
+        Manage your medical store account details
+      </p>
+    </div>
+
+    @if (loading()) {
+      <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-12 text-center">
+        <p class="text-gray-500">Loading profile…</p>
+      </div>
+    } @else {
+
+      <!-- Message -->
+      @if (message()) {
+        <div
+          class="mb-5 rounded-xl px-4 py-3 text-sm font-medium border"
+          [class.bg-green-50]="messageType() === 'success'"
+          [class.text-green-700]="messageType() === 'success'"
+          [class.border-green-200]="messageType() === 'success'"
+          [class.bg-red-50]="messageType() === 'error'"
+          [class.text-red-700]="messageType() === 'error'"
+          [class.border-red-200]="messageType() === 'error'"
+        >
+          {{ message() }}
+        </div>
+      }
+
+      <!-- Stats -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+        <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
+          <p class="text-sm text-gray-500">Total Medicines</p>
+          <p class="text-2xl font-bold text-[#065F46] mt-1">{{ totalMedicines() }}</p>
+        </div>
+        <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
+          <p class="text-sm text-gray-500">In Stock</p>
+          <p class="text-2xl font-bold text-[#047857] mt-1">{{ inStockCount() }}</p>
+        </div>
+        <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
+          <p class="text-sm text-gray-500">Low Stock (≤10)</p>
+          <p class="text-2xl font-bold text-amber-600 mt-1">{{ lowStockCount() }}</p>
+        </div>
+      </div>
+
+      <!-- Card -->
+      <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+
+        <!-- Card Header -->
+        <div class="px-5 py-4 border-b border-gray-200 flex items-center justify-between">
+          <h2 class="text-lg font-semibold text-[#065F46]">Account Details</h2>
+
+          @if (!isEditing()) {
+            <button
+              type="button"
+              (click)="startEdit()"
+              class="px-4 py-2 rounded-lg bg-[#065F46] text-white text-sm font-medium hover:bg-[#047857] transition"
+            >
+              Edit Profile
+            </button>
+          }
+        </div>
+
+        <!-- Body -->
+        <div class="p-5 md:p-6">
+
+          <!-- Logo -->
+          <div class="flex flex-col items-center mb-6">
+            <div class="w-24 h-24 rounded-full border-2 border-[#D1FAE5] bg-[#F5F5F5] flex items-center justify-center overflow-hidden">
+              @if (logoPreview()) {
+                <img [src]="logoPreview()" alt="Medical Logo" class="w-full h-full object-cover" />
+              } @else {
+                <span class="text-4xl">💊</span>
+              }
+            </div>
+
+            @if (isEditing()) {
+              <div class="mt-4">
+                <label class="cursor-pointer rounded-lg bg-[#DCFCE7] text-[#065F46] px-4 py-2 text-sm font-semibold hover:bg-[#BBF7D0] transition inline-block">
+                  Change Logo
+                  <input type="file" accept="image/*" class="hidden" (change)="onLogoSelected($event)" />
+                </label>
+              </div>
+            }
+          </div>
+
+          @if (!isEditing()) {
+
+            <!-- VIEW MODE -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div>
+                <p class="text-xs font-medium text-gray-400 uppercase">Medical Name</p>
+                <p class="mt-1 text-gray-800 font-medium">{{ user()?.medicalName || '—' }}</p>
+              </div>
+              <div>
+                <p class="text-xs font-medium text-gray-400 uppercase">Email</p>
+                <p class="mt-1 text-gray-800 font-medium">{{ user()?.email || '—' }}</p>
+              </div>
+              <div>
+                <p class="text-xs font-medium text-gray-400 uppercase">Phone</p>
+                <p class="mt-1 text-gray-800 font-medium">{{ user()?.phone || '—' }}</p>
+              </div>
+              <div>
+                <p class="text-xs font-medium text-gray-400 uppercase">Address</p>
+                <p class="mt-1 text-gray-800 font-medium">{{ user()?.address || '—' }}</p>
+              </div>
+            </div>
+
+          } @else {
+
+            <!-- EDIT MODE -->
+            <form [formGroup]="profileForm" (ngSubmit)="save()" class="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Medical Name <span class="text-red-500">*</span></label>
+                <input type="text" formControlName="medicalName" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg outline-none text-sm focus:border-[#059669] focus:ring-2 focus:ring-[#D1FAE5]" />
+                @if (profileForm.get('medicalName')?.invalid && profileForm.get('medicalName')?.touched) {
+                  <p class="text-xs text-red-500 mt-1">Medical name is required.</p>
+                }
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Email <span class="text-red-500">*</span></label>
+                <input type="email" formControlName="email" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg outline-none text-sm focus:border-[#059669] focus:ring-2 focus:ring-[#D1FAE5]" />
+                @if (profileForm.get('email')?.invalid && profileForm.get('email')?.touched) {
+                  <p class="text-xs text-red-500 mt-1">Enter a valid email.</p>
+                }
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                <input type="tel" formControlName="phone" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg outline-none text-sm focus:border-[#059669] focus:ring-2 focus:ring-[#D1FAE5]" />
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                <input type="text" formControlName="address" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg outline-none text-sm focus:border-[#059669] focus:ring-2 focus:ring-[#D1FAE5]" />
+              </div>
+
+              <div class="md:col-span-2">
+                <label class="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+                <input type="password" formControlName="password" placeholder="Leave blank to keep current password" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg outline-none text-sm focus:border-[#059669] focus:ring-2 focus:ring-[#D1FAE5]" />
+                @if (profileForm.get('password')?.invalid && profileForm.get('password')?.touched) {
+                  <p class="text-xs text-red-500 mt-1">Password must be at least 6 characters.</p>
+                }
+              </div>
+
+              <div class="md:col-span-2 flex flex-col-reverse sm:flex-row sm:justify-end gap-3 mt-2">
+                <button
+                  type="button"
+                  (click)="cancelEdit()"
+                  class="px-6 py-2.5 rounded-lg border border-gray-200 bg-white text-gray-600 font-medium hover:bg-gray-50 transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  [disabled]="saving()"
+                  class="px-7 py-2.5 rounded-lg bg-[#065F46] text-white font-medium hover:bg-[#047857] transition disabled:opacity-50"
+                >
+                  {{ saving() ? 'Saving…' : 'Save Changes' }}
+                </button>
+              </div>
+
+            </form>
+
+          }
+
+        </div>
+
+      </div>
+
+    }
+
+  </div>
+
+</div>
+

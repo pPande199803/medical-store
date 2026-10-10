@@ -1,0 +1,376 @@
+<div class="min-h-full bg-[#F5F5F5] p-4 md:p-6">
+
+  <!-- Page Header -->
+  <div class="mb-6">
+    <h2 class="text-2xl font-bold text-[#065F46]">
+      @if (editId()) {
+        Edit Medicine
+      } @else {
+        Add Medicine
+      }
+    </h2>
+
+    <p class="mt-1 text-sm text-gray-500">
+      @if (editId()) {
+        Update the details of this medicine — changes save to the database.
+      } @else {
+        Add medicine manually or import multiple medicines using Excel.
+      }
+    </p>
+  </div>
+
+
+  <!-- Main Card -->
+  <div class="mx-auto max-w-5xl rounded-2xl bg-white p-5 shadow-sm md:p-7">
+
+    <!-- Success Message -->
+    @if (uploadMessage()) {
+      <div
+        class="mb-6 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-700"
+      >
+        {{ uploadMessage() }}
+      </div>
+    }
+
+
+    <!-- Error Message -->
+    @if (uploadError()) {
+      <div
+        class="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700"
+      >
+        {{ uploadError() }}
+      </div>
+    }
+
+
+    <!-- Loading medicine details (edit mode) -->
+    @if (loadingEdit()) {
+      <div
+        class="mb-6 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-medium text-blue-700"
+      >
+        Loading medicine details…
+      </div>
+    }
+
+
+    <!-- Excel Section (hidden while editing) -->
+    @if (!editId()) {
+    <div
+      class="mb-8 rounded-xl border border-[#A7F3D0] bg-[#F0FDF4] p-4 md:p-5"
+    >
+
+      <div
+        class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between"
+      >
+
+        <div>
+          <h3 class="font-semibold text-[#065F46]">
+            Import Medicines
+          </h3>
+
+          <p class="mt-1 text-sm text-gray-500">
+            Add multiple medicines at once using an Excel file.
+          </p>
+        </div>
+
+
+        <div class="flex flex-wrap gap-3">
+
+          <!-- Download Template -->
+          <button
+            type="button"
+            (click)="downloadExcelTemplate()"
+            class="rounded-lg border border-[#065F46] bg-white px-4 py-2.5 text-sm font-semibold text-[#065F46] transition hover:bg-[#DCFCE7]"
+          >
+            ↓ Download Excel
+          </button>
+
+
+          <!-- Upload -->
+          <label
+            [class.opacity-50]="saving()"
+            [class.pointer-events-none]="saving()"
+            class="cursor-pointer rounded-lg bg-[#065F46] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#047857]"
+          >
+            @if (saving()) { Saving… } @else { ↑ Upload Excel }
+
+            <input
+              type="file"
+              accept=".xlsx,.xls"
+              class="hidden"
+              (change)="onExcelUpload($event)"
+            />
+          </label>
+
+        </div>
+
+      </div>
+
+
+      @if (excelFileName()) {
+        <div class="mt-3 text-xs text-gray-500">
+          Selected file:
+          <span class="font-medium text-[#065F46]">
+            {{ excelFileName() }}
+          </span>
+        </div>
+      }
+
+    </div>
+    }
+
+
+    <!-- Manual Form -->
+    <form
+      [formGroup]="medicineForm"
+      (ngSubmit)="addMedicine()"
+    >
+
+      <div class="mb-5">
+        <h3 class="text-lg font-semibold text-gray-800">
+          Medicine Details
+        </h3>
+
+        <p class="mt-1 text-xs text-gray-500">
+          Enter the medicine information below.
+        </p>
+      </div>
+
+
+      <!-- Form Grid -->
+      <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
+
+
+        <!-- Medicine Name -->
+        <div>
+          <label
+            class="mb-2 block text-sm font-medium text-gray-700"
+          >
+            Medicine Name
+            <span class="text-red-500">*</span>
+          </label>
+
+          <input
+            type="text"
+            formControlName="name"
+            placeholder="e.g. Paracetamol 500mg"
+            class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm outline-none transition focus:border-[#059669] focus:ring-2 focus:ring-[#A7F3D0]"
+          />
+
+          @if (
+            medicineForm.controls.name.touched &&
+            medicineForm.controls.name.invalid
+          ) {
+            <p class="mt-1 text-xs text-red-500">
+              Medicine name is required.
+            </p>
+          }
+        </div>
+
+
+        <!-- Box Number -->
+        <div>
+          <label
+            class="mb-2 block text-sm font-medium text-gray-700"
+          >
+            Box Number
+            <span class="text-red-500">*</span>
+          </label>
+
+          <input
+            type="text"
+            formControlName="boxNumber"
+            placeholder="e.g. BX-1001"
+            class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm outline-none transition focus:border-[#059669] focus:ring-2 focus:ring-[#A7F3D0]"
+          />
+        </div>
+
+
+        <!-- Per Medicine Price -->
+        <div>
+          <label
+            class="mb-2 block text-sm font-medium text-gray-700"
+          >
+            Per Medicine Price
+            <span class="text-red-500">*</span>
+          </label>
+
+          <div class="relative">
+            <span
+              class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"
+            >
+              ₹
+            </span>
+
+            <input
+              type="number"
+              formControlName="perMedicinePrice"
+              min="0"
+              step="0.01"
+              placeholder="0.00"
+              (input)="onPerMedicinePriceChange()"
+              class="w-full rounded-xl border border-gray-200 bg-gray-50 py-3 pl-9 pr-4 text-sm outline-none transition focus:border-[#059669] focus:ring-2 focus:ring-[#A7F3D0]"
+            />
+          </div>
+
+         <div class="mt-2 flex items-center gap-2"> <input type="checkbox" [checked]="medicinesPerStrip === 15" (change)="toggleStripQuantity()" class="h-4 w-4 rounded border-gray-300 text-[#059669] focus:ring-[#A7F3D0]" /> <p class="text-xs text-gray-400"> 1 strip = {{ medicinesPerStrip }} medicines </p> </div>
+        </div>
+
+
+        <!-- Strip Price -->
+        <div>
+          <label
+            class="mb-2 block text-sm font-medium text-gray-700"
+          >
+            1 Strip Price
+            <span class="text-red-500">*</span>
+          </label>
+
+          <div class="relative">
+            <span
+              class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"
+            >
+              ₹
+            </span>
+
+            <input
+              type="number"
+              formControlName="stripPrice"
+              min="0"
+              step="0.01"
+              placeholder="0.00"
+              (input)="onStripPriceChange()"
+              class="w-full rounded-xl border border-gray-200 bg-gray-50 py-3 pl-9 pr-4 text-sm outline-none transition focus:border-[#059669] focus:ring-2 focus:ring-[#A7F3D0]"
+            />
+          </div>
+
+          <p class="mt-1 text-xs text-gray-400">
+            Auto-calculated from per medicine price.
+          </p>
+        </div>
+
+
+        <!-- Stock -->
+        <div>
+          <label
+            class="mb-2 block text-sm font-medium text-gray-700"
+          >
+            Stock Available
+            <span class="text-red-500">*</span>
+          </label>
+
+          <input
+            type="number"
+            formControlName="stockAvailable"
+            min="0"
+            placeholder="e.g. 100"
+            class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm outline-none transition focus:border-[#059669] focus:ring-2 focus:ring-[#A7F3D0]"
+          />
+
+          <p class="mt-1 text-xs text-gray-400">
+            Enter total available quantity.
+          </p>
+        </div>
+
+
+        <!-- Expired Date -->
+        <div>
+          <label
+            class="mb-2 block text-sm font-medium text-gray-700"
+          >
+            Expired Date
+            <span class="text-red-500">*</span>
+          </label>
+
+          <input
+            type="date"
+            formControlName="expiredDate"
+            class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm outline-none transition focus:border-[#059669] focus:ring-2 focus:ring-[#A7F3D0]"
+          />
+        </div>
+
+      </div>
+
+
+      <!-- Price Information -->
+      <div
+        class="mt-6 rounded-xl bg-gray-50 p-4"
+      >
+        <div class="flex flex-wrap gap-x-8 gap-y-2 text-sm">
+
+          <div>
+            <span class="text-gray-500">
+              Per Medicine:
+            </span>
+
+            <span class="ml-1 font-semibold text-[#065F46]">
+              ₹{{ medicineForm.controls.perMedicinePrice.value || 0 }}
+            </span>
+          </div>
+
+          <div>
+            <span class="text-gray-500">
+              1 Strip:
+            </span>
+
+            <span class="ml-1 font-semibold text-[#065F46]">
+              ₹{{ medicineForm.controls.stripPrice.value || 0 }}
+            </span>
+          </div>
+
+          <div>
+            <span class="text-gray-500">
+              Stock:
+            </span>
+
+            <span class="ml-1 font-semibold text-[#065F46]">
+              {{ medicineForm.controls.stockAvailable.value || 0 }}
+            </span>
+          </div>
+
+        </div>
+      </div>
+
+
+      <!-- Buttons -->
+      <div
+        class="mt-7 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end"
+      >
+
+        @if (editId()) {
+          <button
+            type="button"
+            (click)="cancelEdit()"
+            class="rounded-xl border border-gray-200 bg-white px-6 py-3 text-sm font-semibold text-gray-600 transition hover:bg-gray-50"
+          >
+            ← Back
+          </button>
+        } @else {
+          <button
+            type="button"
+            (click)="medicineForm.reset()"
+            class="rounded-xl border border-gray-200 bg-white px-6 py-3 text-sm font-semibold text-gray-600 transition hover:bg-gray-50"
+          >
+            Clear
+          </button>
+        }
+
+        <button
+          type="submit"
+          [disabled]="saving() || loadingEdit()"
+          class="rounded-xl bg-[#065F46] px-7 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#047857] disabled:opacity-50"
+        >
+          @if (saving()) {
+            {{ editId() ? 'Updating…' : 'Adding…' }}
+          } @else {
+            {{ editId() ? '💾 Update Medicine' : '+ Add Medicine' }}
+          }
+        </button>
+
+      </div>
+
+    </form>
+
+  </div>
+
+</div>

@@ -1,0 +1,717 @@
+<div class="min-h-full bg-[#F5F5F5] p-4 md:p-6">
+
+    <div class="max-w-7xl mx-auto">
+
+        <!-- MAIN CARD -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+
+            <!-- HEADER -->
+            <div class="px-5 py-5 border-b border-gray-200 bg-gradient-to-r from-[#F0FDF4] to-white">
+
+                <div class="flex items-center gap-3">
+
+                    <div class="
+              w-11 h-11
+              rounded-xl
+              bg-[#D1FAE5]
+              flex
+              items-center
+              justify-center
+              text-2xl
+            ">
+                        🧾
+                    </div>
+
+                    <div>
+                        <h1 class="text-xl md:text-2xl font-semibold text-[#065F46]">
+                            New Bill
+                        </h1>
+
+                        <p class="text-sm text-gray-500 mt-0.5">
+                            Create a customer bill quickly using the keyboard
+                        </p>
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- CUSTOMER DETAILS -->
+            <div class="p-5 border-b border-gray-200">
+
+                <h2 class="text-base font-semibold text-gray-700 mb-4 flex items-center gap-2">
+                    <span class="text-lg">👤</span>
+                    Customer Details
+                </h2>
+
+                <form [formGroup]="customerForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                    <!-- CUSTOMER NAME -->
+                    <div>
+
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Customer Name
+                            <span class="text-gray-400 font-normal text-xs">(optional)</span>
+                        </label>
+
+                        <input type="text" formControlName="customerName" placeholder="Leave empty for walk-in customer" class="
+                w-full px-4 py-2.5
+                border border-gray-300
+                rounded-lg
+                outline-none
+                text-sm
+                focus:border-[#059669]
+                focus:ring-2
+                focus:ring-[#D1FAE5]
+              " />
+
+                    </div>
+
+
+                    <!-- MOBILE -->
+                    <div>
+
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Mobile Number
+                            <span class="text-gray-400 font-normal text-xs">(optional)</span>
+                        </label>
+
+                        <input type="tel" maxlength="10" formControlName="mobileNumber"
+                            placeholder="Leave empty if not available" class="
+                w-full px-4 py-2.5
+                border border-gray-300
+                rounded-lg
+                outline-none
+                text-sm
+                focus:border-[#059669]
+                focus:ring-2
+                focus:ring-[#D1FAE5]
+              " />
+
+                        @if (
+                        mobileNumber?.invalid &&
+                        mobileNumber?.touched
+                        ) {
+                        <p class="text-xs text-red-500 mt-1">
+                            Mobile must be 10 digits — or leave it empty.
+                        </p>
+                        }
+
+                    </div>
+
+                </form>
+
+            </div>
+
+
+            <!-- MEDICINE SEARCH -->
+            <div class="p-5">
+
+                <h2 class="text-base font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                    <span class="text-lg">💊</span>
+                    Add Medicine
+                </h2>
+
+
+                <!-- SEARCH -->
+                <div class="relative">
+
+                    <div class="relative">
+
+                        <span class="
+                absolute left-4 top-1/2
+                -translate-y-1/2
+                text-gray-400
+              ">
+                            🔍
+                        </span>
+
+                        <input #searchInput type="text" [value]="searchText()" (input)="updateSearch($event)"
+                            (keydown)="onSearchKeydown($event)" placeholder="Search medicine..." autofocus class="
+    w-full
+    pl-11 pr-4 py-3
+    border border-gray-300
+    rounded-xl
+    outline-none
+    text-sm
+    focus:border-[#059669]
+    focus:ring-2
+    focus:ring-[#D1FAE5]
+  " />
+
+                    </div>
+
+
+                    <!-- SEARCH RESULTS -->
+                    @if (searchText() && searchResults().length > 0) {
+
+                    <div class="
+      mt-2
+      bg-white
+      border border-gray-200
+      rounded-xl
+      shadow-sm
+      overflow-hidden
+    ">
+
+                        <div class="px-4 py-2 bg-[#F0FDF4] border-b border-gray-100 text-xs text-[#047857] font-medium">
+                            ↑ ↓ to navigate • Enter to select • Esc to clear
+                        </div>
+
+                        @for (
+                        medicine of searchResults();
+                        track medicine._id;
+                        let i = $index
+                        ) {
+
+                        <button type="button" (click)="selectMedicine(medicine)" class="
+                            w-full
+                            px-4 py-3
+                            text-left
+                            border-b
+                            border-gray-100
+                            transition
+                            " [class.bg-[#DCFCE7]]="selectedSearchIndex() === i"
+                            [class.bg-white]="selectedSearchIndex() !== i"
+                            [class.hover:bg-[#F0FDF4]]="selectedSearchIndex() !== i">
+
+                            <div class="flex items-center justify-between">
+
+                                <div>
+
+                                    <p class="font-medium text-gray-800">
+                                        {{ medicine.name }}
+                                    </p>
+
+                                    <p class="text-xs text-gray-500 mt-1">
+                                        ₹{{ medicine.perMedicinePrice }} / tablet
+                                        •
+                                        <span class="text-[#047857] font-medium">
+                                            1 strip = {{ medicine.stripPrice && medicine.perMedicinePrice
+                                            ? (medicine.stripPrice / medicine.perMedicinePrice) : 10 }} tablets
+                                        </span>
+                                        •
+                                        Stock: {{ medicine.stockAvailable }}
+                                    </p>
+
+                                </div>
+
+                                <span class="
+                        text-xs
+                        font-medium
+                        text-[#047857]
+                        bg-[#DCFCE7]
+                        px-2 py-1
+                        rounded-full
+                      ">
+                                    In Stock
+                                </span>
+
+                            </div>
+
+                        </button>
+
+                        }
+
+                    </div>
+
+                    }
+
+
+                    <!-- INLINE QUANTITY (keyboard fast-add, no popup) -->
+                    @if (quickAddMedicine()) {
+
+                    <div class="
+      mt-2
+      bg-[#F0FDF4]
+      border border-[#A7F3D0]
+      rounded-xl
+      shadow-sm
+      p-4
+    ">
+
+                        <div class="flex items-center justify-between mb-3">
+
+                            <div>
+                                <p class="font-semibold text-[#065F46]">
+                                    {{ quickAddMedicine()?.name }}
+                                </p>
+                                <p class="text-xs text-gray-500 mt-0.5">
+                                    ₹{{ quickAddMedicine()?.perMedicinePrice }} each •
+                                    Stock: {{ quickAddMedicine()?.stockAvailable }} tablets
+                                </p>
+                            </div>
+
+                            <button type="button" (click)="closeQuickAdd()"
+                                class="text-gray-400 hover:text-gray-700 text-lg leading-none">
+                                ✕
+                            </button>
+
+                        </div>
+
+                        <!-- UNIT TOGGLE -->
+                        <div class="flex items-center gap-2 mb-3">
+                            <button type="button" (click)="setQuantityUnit('tablet')" class="
+                            flex-1
+                            py-2
+                            rounded-lg
+                            text-sm
+                            font-medium
+                            transition
+                          " [class.bg-[#065F46]]="quantityUnit() === 'tablet'"
+                                [class.text-white]="quantityUnit() === 'tablet'"
+                                [class.bg-white]="quantityUnit() !== 'tablet'"
+                                [class.text-gray-600]="quantityUnit() !== 'tablet'"
+                                [class.border]="quantityUnit() !== 'tablet'"
+                                [class.border-gray-300]="quantityUnit() !== 'tablet'">
+                                Tablet
+                            </button>
+
+                            <button type="button" (click)="setQuantityUnit('strip')" class="
+                            flex-1
+                            py-2
+                            rounded-lg
+                            text-sm
+                            font-medium
+                            transition
+                            flex items-center justify-center gap-1
+                          " [class.bg-[#065F46]]="quantityUnit() === 'strip'"
+                                [class.text-white]="quantityUnit() === 'strip'"
+                                [class.bg-white]="quantityUnit() !== 'strip'"
+                                [class.text-gray-600]="quantityUnit() !== 'strip'"
+                                [class.border]="quantityUnit() !== 'strip'"
+                                [class.border-gray-300]="quantityUnit() !== 'strip'">
+                                Strip
+                                <span class="text-xs opacity-75">
+                                    (1 = {{ medicinesPerStrip() }} tablets)
+                                </span>
+                            </button>
+                        </div>
+
+                        <div class="flex items-end gap-3">
+
+                            <div class="flex-1">
+                                <label class="block text-xs font-medium text-gray-600 mb-1">
+                                    {{ quantityUnit() === 'strip' ? 'Strips' : 'Tablets' }}
+                                </label>
+                                <input #qtyInput type="number" min="1" [max]="quickAddMedicine()?.stockAvailable"
+                                    [value]="quickQuantity()" (input)="onQuickQuantityChange($event)"
+                                    (keydown)="onQuickQuantityKeydown($event)" class="
+          w-full
+          text-center
+          border border-gray-300
+          rounded-lg
+          px-3 py-2.5
+          outline-none
+          text-sm
+          focus:border-[#059669]
+          focus:ring-2
+          focus:ring-[#A7F3D0]
+        " />
+                            </div>
+
+                            <div class="text-right">
+                                <p class="text-xs text-gray-500 mb-1">Total</p>
+                                <p class="text-lg font-bold text-[#065F46]">
+                                    ₹{{ quickLineTotal() | number:'1.2-2' }}
+                                </p>
+                            </div>
+
+                        </div>
+
+                        <!-- running tablet equivalent -->
+                        @if (quantityUnit() === 'strip') {
+                        <p class="text-xs text-gray-500 mt-2 text-center">
+                            = {{ quickTabletQuantity() }} tablets
+                        </p>
+                        }
+
+                        <button type="button" (click)="addToBill()" [disabled]="adding()" class="
+            w-full
+            mt-3
+            py-2.5
+            rounded-lg
+            bg-[#065F46]
+            text-white
+            text-sm
+            font-medium
+            hover:bg-[#047857]
+            transition
+            disabled:opacity-50
+          ">
+                            {{ adding() ? 'Adding…' : 'Add to Bill (Enter)' }}
+                        </button>
+
+                        <p class="text-xs text-gray-400 text-center mt-2">
+                            Press Enter to add • Esc to cancel
+                        </p>
+
+                    </div>
+
+                    }
+
+
+                    @if (
+                    searchText() &&
+                    searchResults().length === 0
+                    ) {
+
+                    <div class="
+      mt-2
+      bg-white
+      border border-gray-200
+      rounded-xl
+      shadow-sm
+      p-4
+    ">
+
+                        <p class="text-sm text-gray-500 text-center">
+                            No medicine found.
+                        </p>
+
+                    </div>
+
+                    }
+
+                </div>
+
+
+                <!-- BILL TABLE -->
+                @if (billItems().length > 0) {
+
+                <div class="mt-6">
+
+                    <div class="overflow-x-auto">
+
+                        <table class="w-full min-w-[800px]">
+
+                            <thead>
+
+                                <tr class="bg-[#065F46] text-white">
+
+                                    <th class="px-4 py-3 text-left text-sm font-medium">
+                                        Sr.No
+                                    </th>
+
+                                    <th class="px-4 py-3 text-left text-sm font-medium">
+                                        Medicine Name
+                                    </th>
+
+                                    <th class="px-4 py-3 text-center text-sm font-medium">
+                                        Quantity
+                                    </th>
+
+                                    <th class="px-4 py-3 text-right text-sm font-medium">
+                                        Per Medicine Price
+                                    </th>
+
+                                    <th class="px-4 py-3 text-center text-sm font-medium">
+                                        Expired Date
+                                    </th>
+
+                                    <th class="px-4 py-3 text-right text-sm font-medium">
+                                        Total Price
+                                    </th>
+
+                                    <th class="px-4 py-3 text-center text-sm font-medium">
+                                        Action
+                                    </th>
+
+                                </tr>
+
+                            </thead>
+
+
+                            <tbody>
+
+                                @for (
+                                item of billItems();
+                                track item.medicineId;
+                                let i = $index
+                                ) {
+
+                                <tr class="
+                        border-b
+                        border-gray-100
+                        hover:bg-[#F0FDF4]
+                      ">
+
+                                    <td class="px-4 py-3 text-sm text-gray-600">
+                                        {{ i + 1 }}
+                                    </td>
+
+                                    <td class="px-4 py-3">
+
+                                        <span class="font-medium text-gray-800">
+                                            {{ item.name }}
+                                        </span>
+
+                                    </td>
+
+                                    <td class="px-4 py-3 text-center">
+
+                                        <span class="
+                            inline-flex
+                            px-3 py-1
+                            rounded-full
+                            bg-[#DCFCE7]
+                            text-[#047857]
+                            text-sm
+                            font-medium
+                          ">
+                                            {{ item.quantity }}
+                                        </span>
+
+                                    </td>
+
+                                    <td class="px-4 py-3 text-right text-sm text-gray-700">
+                                        ₹{{ item.perMedicinePrice | number:'1.2-2' }}
+                                    </td>
+
+                                    <td class="px-4 py-3 text-center text-sm text-gray-600">
+                                        {{ formatDate(item.expiredDate) }}
+                                    </td>
+
+                                    <td class="px-4 py-3 text-right">
+
+                                        <span class="font-semibold text-gray-800">
+                                            ₹{{ item.totalPrice | number:'1.2-2' }}
+                                        </span>
+
+                                    </td>
+
+                                    <td class="px-4 py-3 text-center">
+
+                                        <button type="button" (click)="removeItem(item.medicineId)" class="
+                            text-red-500
+                            hover:text-red-700
+                            text-sm
+                            font-medium
+                          ">
+                                            Remove
+                                        </button>
+
+                                    </td>
+
+                                </tr>
+
+                                }
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+                }
+
+
+                <!-- BILL SUMMARY -->
+                @if (billItems().length > 0) {
+
+                <div class="
+              mt-6
+              flex
+              justify-end
+            ">
+
+                    <div class="
+                w-full
+                md:w-[400px]
+                bg-[#F5F5F5]
+                rounded-xl
+                p-5
+                border
+                border-gray-200
+              ">
+
+                        <!-- TOTAL -->
+                        <div class="flex justify-between items-center mb-4">
+
+                            <span class="text-sm text-gray-600">
+                                Total Amount
+                            </span>
+
+                            <span class="text-lg font-semibold text-gray-800">
+                                ₹{{ totalAmount() | number:'1.2-2' }}
+                            </span>
+
+                        </div>
+
+
+                        <!-- DISCOUNT -->
+                        <div class="
+                  flex
+                  items-center
+                  justify-between
+                  gap-4
+                  mb-4
+                ">
+
+                            <label class="text-sm text-gray-600">
+                                Discount
+                            </label>
+
+                            <select (change)="updateDiscount($event)" class="
+                    w-32
+                    px-3 py-2
+                    bg-white
+                    border border-gray-300
+                    rounded-lg
+                    outline-none
+                    text-sm
+                    focus:border-[#059669]
+                    focus:ring-2
+                    focus:ring-[#D1FAE5]
+                  ">
+
+                                <option value="0">
+                                    No Discount
+                                </option>
+
+                                <option value="10">
+                                    10%
+                                </option>
+
+                                <option value="15">
+                                    15%
+                                </option>
+
+                                <option value="20">
+                                    20%
+                                </option>
+
+                                <option value="25">
+                                    25%
+                                </option>
+
+                                <option value="30">
+                                    30%
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <!-- DISCOUNT AMOUNT -->
+                        @if (discount() > 0) {
+
+                        <div class="
+                    flex
+                    justify-between
+                    items-center
+                    mb-4
+                  ">
+
+                            <span class="text-sm text-gray-600">
+                                Discount Amount
+                            </span>
+
+                            <span class="text-sm font-medium text-red-500">
+                                - ₹{{ discountAmount() | number:'1.2-2' }}
+                            </span>
+
+                        </div>
+
+                        }
+
+
+                        <!-- LINE -->
+                        <div class="border-t border-gray-300 my-4"></div>
+
+
+                        <!-- FINAL -->
+                        <div class="flex justify-between items-center">
+
+                            <span class="font-semibold text-gray-800">
+                                Final Amount
+                            </span>
+
+                            <span class="text-2xl font-bold text-[#065F46]">
+                                ₹{{ finalAmount() | number:'1.2-2' }}
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- BUTTONS -->
+                <div class="
+              mt-6
+              flex
+              flex-col-reverse
+              sm:flex-row
+              sm:items-center
+              sm:justify-between
+              gap-3
+            ">
+
+                    <!-- CLEAR BILL -->
+                    <button type="button" (click)="clearBill()" class="
+                px-6 py-2.5
+                rounded-lg
+                border
+                border-red-200
+                text-red-600
+                font-medium
+                hover:bg-red-50
+                transition
+                flex
+                items-center
+                justify-center
+                gap-2
+              ">
+                        <span>🗑</span>
+                        Clear Bill
+                    </button>
+
+                    <!-- SAVE ACTIONS -->
+                    <div class="flex flex-col-reverse sm:flex-row justify-end gap-3">
+                        <button type="button" (click)="saveData()" [disabled]="saving()" class="
+                px-6 py-2.5
+                rounded-lg
+                border
+                border-[#059669]
+                text-[#047857]
+                font-medium
+                hover:bg-[#ECFDF5]
+                transition
+                disabled:opacity-50
+              ">
+                            {{ saving() ? 'Saving…' : 'Save Data' }}
+                        </button>
+
+
+                        <button type="button" (click)="printAndSave()" [disabled]="saving()" class="
+                px-6 py-2.5
+                rounded-lg
+                bg-[#065F46]
+                text-white
+                font-medium
+                hover:bg-[#047857]
+                transition
+                shadow-sm
+                disabled:opacity-50
+              ">
+                            Print & Save
+                        </button>
+                    </div>
+
+                </div>
+
+                }
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>

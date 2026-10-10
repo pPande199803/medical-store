@@ -1,0 +1,243 @@
+<div class="min-h-screen bg-[#F5F5F5] flex items-center justify-center p-4">
+
+    <div class="w-full max-w-md bg-white rounded-2xl border border-gray-200 shadow-sm p-6 sm:p-8">
+
+        <!-- Logo and Title -->
+        <div class="text-center mb-8">
+
+            <!-- <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-[#DCFCE7] flex items-center justify-center">
+                <span class="text-3xl">
+                    💊
+                </span>
+            </div> -->
+
+            <h1 class="text-2xl font-bold text-[#065F46]">
+                Medical-Store
+            </h1>
+
+            <p class="mt-1 text-sm text-gray-500">
+                Create your medical store account
+            </p>
+
+        </div>
+
+
+        <!-- Register Form -->
+        <form [formGroup]="registerForm" (ngSubmit)="register()" class="space-y-5">
+
+            <!-- Error Message -->
+            @if (errorMessage()) {
+            <div class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-600">
+                {{ errorMessage() }}
+            </div>
+            }
+
+            <!-- Medical Logo Upload -->
+            <div class="mb-6 text-center">
+
+                <label class="block mb-3 text-sm font-medium text-gray-700">
+                    Medical Logo
+                </label>
+
+                <!-- Round Logo Preview -->
+                <div class="
+      w-24 h-24
+      mx-auto
+      rounded-full
+      border-2 border-[#D1FAE5]
+      bg-[#F5F5F5]
+      flex items-center justify-center
+      overflow-hidden
+    ">
+
+                    @if (logoPreview()) {
+
+                    <img [src]="logoPreview()" alt="Medical Logo Preview" class="w-full h-full object-cover" />
+
+                    } @else {
+
+                    <span class="text-4xl">
+                        💊
+                    </span>
+
+                    }
+
+                </div>
+
+                <!-- Upload Button -->
+                <div class="mt-4">
+
+                    <label for="medicalLogo" class="
+        inline-flex
+        items-center
+        justify-center
+        px-5 py-2.5
+        rounded-xl
+        bg-[#DCFCE7]
+        text-[#065F46]
+        text-sm
+        font-semibold
+        cursor-pointer
+        hover:bg-[#BBF7D0]
+        transition
+      ">
+                        Upload Logo
+                    </label>
+
+                    <input id="medicalLogo" type="file" accept="image/png,image/jpeg,image/jpg" class="hidden"
+                        (change)="onLogoSelected($event)" />
+
+                </div>
+
+                <p class="mt-2 text-xs text-gray-400">
+                    PNG, JPG or JPEG
+                </p>
+
+                <!-- Remove Logo -->
+                @if (logoPreview()) {
+
+                <button type="button" (click)="removeLogo()" class="
+        mt-1
+        text-xs
+        text-red-500
+        hover:text-red-600
+        hover:underline
+      ">
+                    Remove Logo
+                </button>
+
+                }
+
+            </div>
+
+            <!-- Medical Name -->
+            <div>
+
+                <label for="medicalName" class="block mb-2 text-sm font-medium text-gray-700">
+                    Medical Name
+                </label>
+
+                <input id="medicalName" type="text" formControlName="medicalName" placeholder="Enter medical store name"
+                    autocomplete="organization"
+                    class="w-full px-4 py-3 rounded-xl border border-gray-300 text-sm text-gray-700 outline-none transition placeholder:text-gray-400 focus:border-[#059669] focus:ring-2 focus:ring-[#D1FAE5]" />
+
+                @if (
+                registerForm.get('medicalName')?.touched &&
+                registerForm.get('medicalName')?.hasError('required')
+                ) {
+                <p class="mt-1 text-xs text-red-500">
+                    Medical name is required.
+                </p>
+                }
+
+            </div>
+
+
+            <!-- Email -->
+            <div>
+
+                <label for="email" class="block mb-2 text-sm font-medium text-gray-700">
+                    Email ID
+                </label>
+
+                <input id="email" type="email" formControlName="email" placeholder="Enter your email"
+                    autocomplete="email"
+                    class="w-full px-4 py-3 rounded-xl border border-gray-300 text-sm text-gray-700 outline-none transition placeholder:text-gray-400 focus:border-[#059669] focus:ring-2 focus:ring-[#D1FAE5]" />
+
+                @if (
+                registerForm.get('email')?.touched &&
+                registerForm.get('email')?.hasError('required')
+                ) {
+                <p class="mt-1 text-xs text-red-500">
+                    Email is required.
+                </p>
+                }
+
+                @if (
+                registerForm.get('email')?.touched &&
+                registerForm.get('email')?.hasError('email')
+                ) {
+                <p class="mt-1 text-xs text-red-500">
+                    Please enter a valid email address.
+                </p>
+                }
+
+            </div>
+
+
+            <!-- Password -->
+            <div>
+
+                <label for="password" class="block mb-2 text-sm font-medium text-gray-700">
+                    Password
+                </label>
+
+                <div class="relative">
+
+                    <input id="password" [type]="showPassword() ? 'text' : 'password'" formControlName="password"
+                        placeholder="Enter your password" autocomplete="new-password"
+                        class="w-full px-4 py-3 pr-12 rounded-xl border border-gray-300 text-sm text-gray-700 outline-none transition placeholder:text-gray-400 focus:border-[#059669] focus:ring-2 focus:ring-[#D1FAE5]" />
+
+                    <button type="button" (click)="togglePassword()"
+                        [attr.aria-label]="showPassword() ? 'Hide password' : 'Show password'"
+                        class="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-lg text-gray-500 hover:bg-[#F0FDF4] hover:text-[#065F46] transition">
+                        @if (showPassword()) {
+                        <span>🙈</span>
+                        } @else {
+                        <span>👁️</span>
+                        }
+                    </button>
+
+                </div>
+
+                @if (
+                registerForm.get('password')?.touched &&
+                registerForm.get('password')?.hasError('required')
+                ) {
+                <p class="mt-1 text-xs text-red-500">
+                    Password is required.
+                </p>
+                }
+
+                @if (
+                registerForm.get('password')?.touched &&
+                registerForm.get('password')?.hasError('minlength')
+                ) {
+                <p class="mt-1 text-xs text-red-500">
+                    Password must be at least 6 characters.
+                </p>
+                }
+
+            </div>
+
+
+            <!-- Register Button -->
+            <button type="submit" [disabled]="registerForm.invalid || loading()"
+                class="w-full py-3 rounded-xl bg-[#065F46] text-white text-sm font-semibold transition hover:bg-[#047857] active:bg-[#064E3B] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                @if (loading()) {
+                <span>Please wait…</span>
+                } @else {
+                Register
+                }
+            </button>
+
+        </form>
+
+
+        <!-- Login -->
+        <div class="text-center mt-7">
+
+            <p class="text-sm text-gray-500">
+                Already have an account?
+            </p>
+
+            <a routerLink="/login"
+                class="inline-block mt-2 text-sm font-semibold text-[#059669] hover:text-[#047857] hover:underline transition">
+                Login
+            </a>
+
+        </div>
+
+    </div>
+
+</div>

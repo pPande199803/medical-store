@@ -1,0 +1,759 @@
+<div class="min-h-full bg-[#F5F5F5] p-4 md:p-6">
+
+  <div class="
+      max-w-7xl
+      mx-auto
+      bg-white
+      rounded-2xl
+      shadow-sm
+      border border-gray-200
+      overflow-visible
+    ">
+
+    <!-- ================================= -->
+    <!-- HEADER -->
+    <!-- ================================= -->
+
+    <div class="
+        px-5 py-4
+        border-b border-gray-200
+        flex flex-col
+        md:flex-row
+        md:items-center
+        md:justify-between
+        gap-4
+      ">
+
+      <div>
+
+        <h1 class="
+            text-xl
+            font-semibold
+            text-[#065F46]
+          ">
+          Order Medicine
+        </h1>
+
+        <p class="
+            text-sm
+            text-gray-500
+            mt-1
+          ">
+          Add medicines that need to be ordered
+        </p>
+
+      </div>
+
+
+      <!-- ================================= -->
+      <!-- EXPORT BUTTON -->
+      <!-- ================================= -->
+
+      <div class="relative">
+
+        <button type="button" (click)="toggleExportMenu()" class="
+            flex
+            items-center
+            gap-2
+            px-4 py-2.5
+            rounded-xl
+            bg-[#065F46]
+            text-white
+            text-sm
+            font-medium
+            hover:bg-[#047857]
+            transition
+          ">
+
+          <span>
+            Export
+          </span>
+
+          <span class="text-xs">
+            ▼
+          </span>
+
+        </button>
+
+
+        <!-- EXPORT MENU -->
+
+        @if (showExportMenu()) {
+
+        <div class="
+              absolute
+              right-0
+              top-full
+              mt-2
+              w-48
+              bg-white
+              border border-gray-200
+              rounded-xl
+              shadow-lg
+              z-50
+              overflow-hidden
+            ">
+
+          <!-- EXCEL -->
+
+          <button type="button" (click)="exportExcel()" class="
+                w-full
+                px-4 py-3
+                text-left
+                text-sm
+                text-gray-700
+                hover:bg-[#F0FDF4]
+                flex
+                items-center
+                gap-3
+              ">
+
+            <span>
+              📊
+            </span>
+
+            <span>
+              Export Excel
+            </span>
+
+          </button>
+
+
+          <!-- PDF -->
+
+          <button type="button" (click)="exportPdf()" class="
+                w-full
+                px-4 py-3
+                text-left
+                text-sm
+                text-gray-700
+                hover:bg-[#F0FDF4]
+                flex
+                items-center
+                gap-3
+              ">
+
+            <span>
+              📄
+            </span>
+
+            <span>
+              Export PDF
+            </span>
+
+          </button>
+
+
+          <!-- WHATSAPP -->
+
+          <button type="button" (click)="sendToWhatsApp()" class="
+                w-full
+                px-4 py-3
+                text-left
+                text-sm
+                text-gray-700
+                hover:bg-[#F0FDF4]
+                flex
+                items-center
+                gap-3
+              ">
+
+            <span>
+              💬
+            </span>
+
+            <span>
+              Send on WhatsApp
+            </span>
+
+          </button>
+
+        </div>
+
+        }
+
+      </div>
+
+    </div>
+
+
+    <!-- ================================= -->
+    <!-- ADD MEDICINE FORM -->
+    <!-- ================================= -->
+
+    <div class="p-5">
+
+      <form [formGroup]="orderForm" (ngSubmit)="addMedicine()" class="
+          grid
+          grid-cols-1
+          md:grid-cols-[1fr_200px_auto]
+          gap-4
+          items-end
+        ">
+
+        <!-- MEDICINE NAME -->
+
+        <div>
+
+          <label class="
+              block
+              text-sm
+              font-medium
+              text-gray-700
+              mb-2
+            ">
+            Medicine Name
+          </label>
+
+          <input type="text" formControlName="medicineName" placeholder="Enter medicine name" class="
+              w-full
+              px-4 py-3
+              border border-gray-300
+              rounded-xl
+              outline-none
+              text-sm
+              focus:border-[#059669]
+              focus:ring-2
+              focus:ring-[#D1FAE5]
+            " />
+
+          @if (
+          orderForm.get('medicineName')?.invalid &&
+          orderForm.get('medicineName')?.touched
+          ) {
+
+          <p class="
+                text-xs
+                text-red-500
+                mt-1
+              ">
+            Medicine name is required.
+          </p>
+
+          }
+
+        </div>
+
+
+        <!-- QUANTITY -->
+
+        <div>
+
+          <label class="
+              block
+              text-sm
+              font-medium
+              text-gray-700
+              mb-2
+            ">
+            Quantity
+          </label>
+
+          <input type="number" formControlName="quantity" min="1" placeholder="Enter quantity" class="
+              w-full
+              px-4 py-3
+              border border-gray-300
+              rounded-xl
+              outline-none
+              text-sm
+              focus:border-[#059669]
+              focus:ring-2
+              focus:ring-[#D1FAE5]
+            " />
+
+          @if (
+          orderForm.get('quantity')?.invalid &&
+          orderForm.get('quantity')?.touched
+          ) {
+
+          <p class="
+                text-xs
+                text-red-500
+                mt-1
+              ">
+            Quantity must be at least 1.
+          </p>
+
+          }
+
+        </div>
+
+
+        <!-- ADD BUTTON -->
+
+        <button type="submit" class="
+            px-6 py-3
+            rounded-xl
+            bg-[#065F46]
+            text-white
+            text-sm
+            font-medium
+            hover:bg-[#047857]
+            transition
+          ">
+          + Add Medicine
+        </button>
+
+      </form>
+
+    </div>
+
+
+    <!-- ================================= -->
+    <!-- MEDICINE TABLE -->
+    <!-- ================================= -->
+
+    <div class="px-5 pb-5">
+
+  <!-- DATE FILTER -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+
+    <h2 class="text-sm font-semibold text-gray-700">
+      Order List
+    </h2>
+
+    <div class="flex items-center gap-2">
+
+      <label class="text-sm font-medium text-gray-600">
+        Filter by Date:
+      </label>
+
+      <input
+        type="date"
+        [value]="selectedDate()"
+        (change)="filterByDate($event)"
+        class="
+          px-3 py-2
+          border border-gray-300
+          rounded-lg
+          text-sm
+          text-gray-700
+          outline-none
+          focus:border-[#059669]
+          focus:ring-2
+          focus:ring-[#D1FAE5]
+        "
+      />
+
+      @if (selectedDate()) {
+        <button
+          type="button"
+          (click)="clearDateFilter()"
+          class="
+            px-3 py-2
+            rounded-lg
+            bg-[#DCFCE7]
+            text-[#065F46]
+            text-sm
+            font-medium
+            hover:bg-[#BBF7D0]
+            transition
+          "
+        >
+          Clear
+        </button>
+      }
+
+    </div>
+
+  </div>
+
+      @if (orderMedicines().length > 0) {
+
+      <div class="
+            overflow-x-auto
+            rounded-xl
+            border border-gray-200
+          ">
+
+        <table class="
+              w-full
+              min-w-[600px]
+              text-sm
+            ">
+
+          <!-- TABLE HEADER -->
+
+          <thead>
+
+            <tr class="
+                  bg-[#065F46]
+                  text-white
+                ">
+
+              <th class="
+                    px-4 py-3
+                    text-left
+                  ">
+                Sr.No
+              </th>
+
+              <th class="
+                    px-4 py-3
+                    text-left
+                  ">
+                Medicine Name
+              </th>
+
+              <th class="
+                    px-4 py-3
+                    text-left
+                  ">
+                Quantity
+              </th>
+
+              <th class="
+                    px-4 py-3
+                    text-left
+                  ">
+                Current Date
+              </th>
+
+              <th class="
+                    px-4 py-3
+                    text-left
+                  ">
+                Status
+              </th>
+
+              <th class="
+                    px-4 py-3
+                    text-left
+                  ">
+                Action
+              </th>
+
+            </tr>
+
+          </thead>
+
+
+          <!-- TABLE BODY -->
+
+          <tbody>
+
+            @for (
+            medicine of filteredOrderMedicines();
+            track medicine._id;
+            let i = $index
+            ) {
+
+            <tr class="
+                    border-b
+                    border-gray-100
+                    hover:bg-[#F0FDF4]
+                    transition
+                  ">
+
+              <!-- SR NO -->
+
+              <td class="
+                      px-4 py-3
+                      text-gray-600
+                    ">
+                {{ i + 1 }}
+              </td>
+
+
+              <!-- MEDICINE NAME -->
+
+              <td class="
+                      px-4 py-3
+                      font-medium
+                      text-gray-800
+                    ">
+                {{ medicine.medicineName }}
+              </td>
+
+
+              <!-- QUANTITY -->
+
+              <td class="
+                      px-4 py-3
+                      text-gray-700
+                    ">
+
+                <span class="
+                        inline-flex
+                        px-2.5 py-1
+                        rounded-full
+                        text-xs
+                        font-medium
+                        bg-[#DCFCE7]
+                        text-[#047857]
+                      ">
+                  {{ medicine.quantity }}
+                </span>
+
+              </td>
+
+              <td class="
+                      px-4 py-3
+                      text-gray-700
+                    ">
+                {{ medicine.date }}
+              </td>
+
+
+              <!-- STATUS -->
+
+              <td class="px-4 py-3">
+                @if (medicine.status === 'received') {
+                <span class="inline-flex px-2.5 py-1 rounded-full text-xs font-medium bg-[#DCFCE7] text-[#047857]">
+                  Received
+                </span>
+                } @else {
+                <span class="inline-flex px-2.5 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-700">
+                  Pending
+                </span>
+                }
+              </td>
+
+
+              <!-- ACTIONS -->
+
+              <td class="
+                      px-4 py-3
+                    ">
+
+                <div class="flex items-center gap-2">
+
+                  @if (medicine.status !== 'received') {
+                  <button type="button" (click)="openReceiveModal(medicine)" class="
+                          px-3 py-1.5
+                          rounded-lg
+                          text-xs
+                          font-medium
+                          bg-[#065F46]
+                          text-white
+                          hover:bg-[#047857]
+                          transition
+                        ">
+                    Add to Database
+                  </button>
+                  }
+
+                  <button type="button" (click)="removeMedicine(medicine._id)" class="
+                          px-3 py-1.5
+                          rounded-lg
+                          text-xs
+                          font-medium
+                          bg-red-50
+                          text-red-600
+                          hover:bg-red-100
+                          transition
+                        ">
+                    Remove
+                  </button>
+
+                </div>
+
+              </td>
+
+            </tr>
+
+            }
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+
+      <!-- ================================= -->
+      <!-- SUMMARY -->
+      <!-- ================================= -->
+
+      <div class="
+            flex
+            justify-end
+            mt-4
+          ">
+
+        <div class="
+              px-4 py-3
+              rounded-xl
+              bg-[#F0FDF4]
+              text-sm
+              text-[#065F46]
+              font-medium
+            ">
+
+          Total Medicines:
+          {{ filteredOrderMedicines().length }}
+
+        </div>
+
+      </div>
+
+      } @else {
+
+
+      <!-- ================================= -->
+      <!-- EMPTY STATE -->
+      <!-- ================================= -->
+
+      <div class="
+            py-16
+            text-center
+            border
+            border-gray-200
+            rounded-xl
+          ">
+
+        <div class="
+              text-4xl
+              mb-3
+            ">
+          🛒
+        </div>
+
+        <h3 class="
+              text-base
+              font-semibold
+              text-gray-700
+            ">
+          No medicines added
+        </h3>
+
+        <p class="
+              text-sm
+              text-gray-500
+              mt-1
+            ">
+          Add medicine name and quantity
+          to create your order list.
+        </p>
+
+      </div>
+
+      }
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- ================================= -->
+<!-- RECEIVE INTO DATABASE MODAL -->
+<!-- ================================= -->
+@if (receiveOrder()) {
+
+<div
+  class="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 p-4"
+  (click)="closeReceiveModal()"
+>
+
+  <div
+    class="w-full max-w-md bg-white rounded-2xl shadow-2xl p-6"
+    (click)="$event.stopPropagation()"
+  >
+
+    <div class="flex justify-between items-start mb-1">
+      <div>
+        <h2 class="text-lg font-semibold text-[#065F46]">
+          Add to Database
+        </h2>
+        <p class="text-sm text-gray-500 mt-0.5">
+          {{ receiveOrder()?.medicineName }}
+        </p>
+      </div>
+
+      <button
+        type="button"
+        (click)="closeReceiveModal()"
+        class="text-gray-400 hover:text-gray-700 text-xl leading-none"
+      >
+        ✕
+      </button>
+    </div>
+
+    <p class="text-xs text-gray-400 mb-5">
+      Enter the received stock details below.
+    </p>
+
+    <form [formGroup]="receiveForm" (ngSubmit)="confirmReceive()" class="space-y-4">
+
+      <!-- Expiry Date -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">
+          Expired Date <span class="text-red-500">*</span>
+        </label>
+        <input
+          type="date"
+          formControlName="expiredDate"
+          class="w-full px-4 py-2.5 border border-gray-300 rounded-lg outline-none text-sm focus:border-[#059669] focus:ring-2 focus:ring-[#D1FAE5]"
+        />
+      </div>
+
+      <!-- Box Number -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">
+          Box Number <span class="text-red-500">*</span>
+        </label>
+        <input
+          type="number"
+          min="0"
+          formControlName="boxNumber"
+          placeholder="Enter box number"
+          class="w-full px-4 py-2.5 border border-gray-300 rounded-lg outline-none text-sm focus:border-[#059669] focus:ring-2 focus:ring-[#D1FAE5]"
+        />
+      </div>
+
+      <!-- Quantity -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">
+          Quantity <span class="text-red-500">*</span>
+        </label>
+        <input
+          type="number"
+          min="1"
+          formControlName="quantity"
+          class="w-full px-4 py-2.5 border border-gray-300 rounded-lg outline-none text-sm focus:border-[#059669] focus:ring-2 focus:ring-[#D1FAE5]"
+        />
+      </div>
+
+      <!-- Price -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">
+          Per Medicine Price (₹) <span class="text-red-500">*</span>
+        </label>
+        <input
+          type="number"
+          min="0"
+          step="0.01"
+          formControlName="perMedicinePrice"
+          placeholder="Enter price"
+          class="w-full px-4 py-2.5 border border-gray-300 rounded-lg outline-none text-sm focus:border-[#059669] focus:ring-2 focus:ring-[#D1FAE5]"
+        />
+      </div>
+
+      <!-- Buttons -->
+      <div class="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-2">
+        <button
+          type="button"
+          (click)="closeReceiveModal()"
+          class="px-6 py-2.5 rounded-lg border border-gray-200 bg-white text-gray-600 font-medium hover:bg-gray-50 transition"
+        >
+          Cancel
+        </button>
+
+        <button
+          type="submit"
+          [disabled]="receiving()"
+          class="px-7 py-2.5 rounded-lg bg-[#065F46] text-white font-medium hover:bg-[#047857] transition disabled:opacity-50"
+        >
+          {{ receiving() ? 'Adding…' : 'Add to Database' }}
+        </button>
+      </div>
+
+    </form>
+
+  </div>
+
+</div>
+
+}

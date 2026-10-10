@@ -1,0 +1,98 @@
+<header
+  class="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 md:px-6 shadow-sm relative z-50"
+>
+  <!-- Left Side -->
+  <div class="flex items-center gap-3">
+
+    <!-- Sidebar Toggle -->
+    <button
+      type="button"
+      (click)="toggleMenu()"
+      class="p-2 rounded-lg text-[#065F46] cursor-pointer transition duration-200"
+      aria-label="Toggle sidebar"
+    >
+      <span class="text-2xl">☰</span>
+    </button>
+
+    <!-- App Name -->
+    <h1 class="text-xl md:text-2xl font-bold text-[#065F46]">
+      Medical-Store
+    </h1>
+
+  </div>
+
+
+  <!-- Right Side -->
+  <div class="relative">
+
+    <!-- Profile Button -->
+    <button
+      type="button"
+      (click)="toggleProfile()"
+      class="flex items-center gap-2 p-1.5 rounded-full cursor-pointer transition duration-200"
+      aria-label="Profile menu"
+    >
+
+      <!-- Profile Image / Initial -->
+      @if (user()?.logo) {
+        <img
+          [src]="user()?.logo"
+          alt="Profile"
+          class="w-10 h-10 rounded-full object-cover border-2 border-[#A7F3D0]"
+        />
+      } @else {
+        <span
+          class="w-10 h-10 rounded-full flex items-center justify-center bg-[#D1FAE5] text-[#065F46] font-semibold border-2 border-[#A7F3D0]"
+        >
+          {{ (user()?.medicalName || 'U').charAt(0).toUpperCase() }}
+        </span>
+      }
+
+      <!-- User Name -->
+      <span class="hidden sm:block text-sm font-medium text-[#065F46] max-w-[140px] truncate">
+        {{ user()?.medicalName || 'Account' }}
+      </span>
+
+      <!-- Dropdown Arrow -->
+      <span
+        class="hidden sm:block text-[#065F46] text-sm"
+        [class.rotate-180]="isProfileOpen()"
+      >
+        ▼
+      </span>
+
+    </button>
+
+
+    <!-- Dropdown -->
+    @if (isProfileOpen()) {
+      <div
+        class="absolute right-0 mt-2 w-44 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden"
+      >
+
+        <!-- Profile -->
+        <button
+          type="button"
+          (click)="goToProfile()"
+          class="w-full flex items-center gap-3 px-4 py-3 text-left text-[#065F46] hover:bg-[#DCFCE7] transition cursor-pointer"
+        >
+          <span>👤</span>
+          <span class="text-sm font-medium cursor-pointer">Profile</span>
+        </button>
+
+        <!-- Logout -->
+        <button
+          type="button"
+          (click)="logout()"
+          class="w-full flex items-center gap-3 px-4 py-3 text-left text-red-600 hover:bg-red-50 transition border-t border-gray-100 cursor-pointer"
+        >
+          <span>🚪</span>
+          <span class="text-sm font-medium">Logout</span>
+        </button>
+
+      </div>
+    }
+
+  </div>
+
+</header>

@@ -1,0 +1,70 @@
+@if (isAuthPage()) {
+
+  <!-- Login / Register / 404 Page -->
+  <main class="min-h-screen">
+    <router-outlet />
+  </main>
+
+} @else {
+
+  <div class="h-screen flex flex-col bg-gray-50 overflow-hidden">
+
+    <!-- Fixed Header -->
+    <div class="fixed top-0 left-0 right-0 z-[100] h-16">
+      <app-header
+        (menuClick)="toggleSidebar()"
+      />
+    </div>
+
+    <!-- Main Layout -->
+    <div class="flex flex-1 pt-16 min-h-0">
+
+      <!-- Mobile Overlay -->
+      @if (isSidebarOpen()) {
+        <div
+          class="fixed inset-0 bg-black/40 z-40 md:hidden"
+          (click)="closeSidebar()"
+        ></div>
+      }
+
+      <!-- Fixed Sidebar -->
+      <aside
+        class="
+          bg-[#F5F5F5]
+          fixed md:relative
+          top-16 md:top-0
+          left-0
+          h-[calc(100vh-4rem)]
+          z-50
+          transition-all duration-300 ease-in-out
+          overflow-hidden
+          border-r border-gray-200
+          shrink-0
+        "
+        [class.w-20]="isSidebarOpen()"
+        [class.w-0]="!isSidebarOpen()"
+      >
+        <app-sidebar />
+      </aside>
+
+      <!-- Only Main Content Scrolls -->
+      <main
+        class="
+          flex-1
+          min-w-0
+          min-h-0
+          p-4
+          overflow-y-auto
+        "
+      >
+        <router-outlet />
+      </main>
+
+    </div>
+
+    <!-- Footer -->
+    <app-footer />
+
+  </div>
+
+}
