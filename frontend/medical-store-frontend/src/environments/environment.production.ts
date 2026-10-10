@@ -1,6 +1,6 @@
 export const environment = {
   production: true,
-  apiUrl: '/api',
+  apiUrl: 'https://medical-store-gamma-eight.vercel.app/api',
   appName: 'Medical-Store',
   whatsappNumber: '919876543210',
   whatsappBaseUrl: 'https://wa.me',
