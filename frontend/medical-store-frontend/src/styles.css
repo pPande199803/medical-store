@@ -19,7 +19,7 @@
 
 @media print {
   @page {
-    margin: 12mm;
+    margin: 10mm;
   }
 
   /* App chrome that does NOT contain the print sheet. */
@@ -62,10 +62,26 @@
   body.printing-bill .bill-print-sheet {
     display: block !important;
     width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    /* Inner padding so nothing ever touches the paper edge,
+       even when the print dialog overrides the page margins. */
+    padding: 8mm;
     color: #111827;
     background: #fff;
     font-size: 13px;
     line-height: 1.5;
+  }
+
+  /* The table always fits inside the padded sheet. */
+  body.printing-bill .bill-print-sheet table {
+    table-layout: fixed;
+    width: 100%;
+  }
+
+  /* Long medicine names wrap instead of stretching the column. */
+  body.printing-bill .bill-print-sheet td {
+    word-break: break-word;
   }
 
   /* Keep the logo and brand colours on paper. */
